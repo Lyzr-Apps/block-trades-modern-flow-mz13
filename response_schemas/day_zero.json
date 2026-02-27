@@ -1,0 +1,53 @@
+{
+  "agent_name": "Day Zero Readiness Agent",
+  "agent_id": "69a19384fcc35a3ce8368482",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "category": {
+      "type": "string",
+      "description": "Response category: documents, it_provisioning, meetings, benefits, org_chart, status_update"
+    },
+    "title": {
+      "type": "string",
+      "description": "Brief title of the response"
+    },
+    "message": {
+      "type": "string",
+      "description": "Detailed response message"
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "status": { "type": "string", "description": "pending, completed, overdue" },
+          "due_date": { "type": "string" },
+          "priority": { "type": "string", "description": "high, medium, low" }
+        },
+        "required": ["task", "status", "due_date", "priority"]
+      },
+      "description": "List of action items for the new hire"
+    },
+    "meetings_scheduled": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "date": { "type": "string" },
+          "time": { "type": "string" },
+          "attendees": { "type": "string" }
+        },
+        "required": ["title", "date", "time", "attendees"]
+      },
+      "description": "Meetings scheduled or to be scheduled"
+    },
+    "completion_percentage": {
+      "type": "number",
+      "description": "Overall pre-boarding completion percentage"
+    }
+  }
+}

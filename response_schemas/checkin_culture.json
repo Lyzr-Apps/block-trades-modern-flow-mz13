@@ -1,0 +1,52 @@
+{
+  "agent_name": "Check-In & Culture Agent",
+  "agent_id": "69a1936af2417c8ef5b385bd",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "message": {
+      "type": "string",
+      "description": "Main response message"
+    },
+    "sentiment_score": {
+      "type": "number",
+      "description": "Current sentiment score 1-10"
+    },
+    "sentiment_trend": {
+      "type": "string",
+      "description": "improving, stable, declining"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "issue": { "type": "string" },
+          "severity": { "type": "string", "description": "low, medium, high, critical" },
+          "suggested_action": { "type": "string" }
+        },
+        "required": ["issue", "severity", "suggested_action"]
+      },
+      "description": "Detected blockers or frustration signals"
+    },
+    "culture_tips": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Company culture tips and norms"
+    },
+    "risk_flag": {
+      "type": "boolean",
+      "description": "Whether a risk signal should be escalated to manager"
+    },
+    "risk_reason": {
+      "type": "string",
+      "description": "Reason for risk flag if true"
+    },
+    "weekly_pulse_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Questions for weekly sentiment pulse"
+    }
+  }
+}

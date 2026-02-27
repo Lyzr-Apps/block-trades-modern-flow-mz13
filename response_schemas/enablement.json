@@ -1,0 +1,72 @@
+{
+  "agent_name": "Manager Enablement Agent",
+  "agent_id": "69a1936afcc35a3ce836847e",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "coaching_prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "prompt": { "type": "string" },
+          "context": { "type": "string" },
+          "priority": { "type": "string", "description": "high, medium, low" }
+        },
+        "required": ["topic", "prompt", "context", "priority"]
+      },
+      "description": "1:1 conversation prompts"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal": { "type": "string" },
+          "severity": { "type": "string", "description": "low, medium, high, critical" },
+          "evidence": { "type": "string" },
+          "recommended_action": { "type": "string" }
+        },
+        "required": ["signal", "severity", "evidence", "recommended_action"]
+      },
+      "description": "Detected risk and frustration signals"
+    },
+    "missed_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "days_overdue": { "type": "number" },
+          "impact": { "type": "string" }
+        },
+        "required": ["task", "days_overdue", "impact"]
+      },
+      "description": "Missed or overdue tasks"
+    },
+    "skill_development": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "area": { "type": "string" },
+          "current_level": { "type": "string" },
+          "target_level": { "type": "string" },
+          "suggestion": { "type": "string" }
+        },
+        "required": ["area", "current_level", "target_level", "suggestion"]
+      },
+      "description": "Skill development recommendations"
+    },
+    "weekly_summary": {
+      "type": "string",
+      "description": "Weekly manager briefing summary"
+    },
+    "intervention_urgency": {
+      "type": "string",
+      "description": "immediate, this_week, next_checkpoint, no_action_needed"
+    }
+  }
+}

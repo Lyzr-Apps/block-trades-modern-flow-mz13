@@ -1,0 +1,67 @@
+{
+  "agent_name": "Onboarding Insights Agent",
+  "agent_id": "69a1936a78bb4ecc77c12d22",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "team_metrics": {
+      "type": "object",
+      "properties": {
+        "avg_completion": { "type": "number" },
+        "avg_ramp_velocity": { "type": "number" },
+        "at_risk_count": { "type": "number" },
+        "compliance_rate": { "type": "number" },
+        "total_hires": { "type": "number" },
+        "on_track_count": { "type": "number" }
+      },
+      "required": ["avg_completion", "avg_ramp_velocity", "at_risk_count", "compliance_rate", "total_hires", "on_track_count"],
+      "description": "Team-level metrics"
+    },
+    "hire_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "start_date": { "type": "string" },
+          "completion_percentage": { "type": "number" },
+          "ramp_velocity": { "type": "number" },
+          "sentiment_score": { "type": "number" },
+          "risk_level": { "type": "string", "description": "low, medium, high, critical" },
+          "risk_reasons": { "type": "array", "items": { "type": "string" } },
+          "tool_adoption": { "type": "number" },
+          "compliance_status": { "type": "string", "description": "complete, in_progress, overdue" }
+        },
+        "required": ["name", "role", "start_date", "completion_percentage", "ramp_velocity", "sentiment_score", "risk_level", "risk_reasons", "tool_adoption", "compliance_status"]
+      },
+      "description": "Per-hire detailed analytics"
+    },
+    "risk_alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hire_name": { "type": "string" },
+          "alert_type": { "type": "string", "description": "stalled, sentiment_decline, compliance_overdue, low_engagement" },
+          "severity": { "type": "string", "description": "warning, critical" },
+          "description": { "type": "string" },
+          "recommended_action": { "type": "string" }
+        },
+        "required": ["hire_name", "alert_type", "severity", "description", "recommended_action"]
+      },
+      "description": "Active risk alerts"
+    },
+    "trends": {
+      "type": "object",
+      "properties": {
+        "completion_trend": { "type": "string", "description": "improving, stable, declining" },
+        "sentiment_trend": { "type": "string", "description": "improving, stable, declining" },
+        "velocity_trend": { "type": "string", "description": "improving, stable, declining" }
+      },
+      "required": ["completion_trend", "sentiment_trend", "velocity_trend"],
+      "description": "Week-over-week trends"
+    }
+  }
+}

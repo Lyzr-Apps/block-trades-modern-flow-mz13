@@ -1,0 +1,64 @@
+{
+  "agent_name": "Role-Based Ramp Agent",
+  "agent_id": "69a19369177bcf99abd099e8",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "message": {
+      "type": "string",
+      "description": "Main response message"
+    },
+    "onboarding_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": { "type": "string", "description": "30-day, 60-day, or 90-day" },
+          "milestone": { "type": "string" },
+          "deliverable": { "type": "string" },
+          "status": { "type": "string", "description": "not_started, in_progress, completed" },
+          "target_date": { "type": "string" }
+        },
+        "required": ["phase", "milestone", "deliverable", "status", "target_date"]
+      },
+      "description": "Role-specific onboarding plan with milestones"
+    },
+    "readiness_scores": {
+      "type": "object",
+      "properties": {
+        "technical_skills": { "type": "number" },
+        "domain_knowledge": { "type": "number" },
+        "process_proficiency": { "type": "number" },
+        "tool_mastery": { "type": "number" },
+        "team_integration": { "type": "number" },
+        "overall": { "type": "number" }
+      },
+      "required": ["technical_skills", "domain_knowledge", "process_proficiency", "tool_mastery", "team_integration", "overall"],
+      "description": "Functional readiness scores 0-100"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "required": { "type": "boolean" },
+          "status": { "type": "string", "description": "not_started, in_progress, completed" },
+          "deadline": { "type": "string" }
+        },
+        "required": ["name", "required", "status", "deadline"]
+      },
+      "description": "Certification tracking"
+    },
+    "ramp_velocity": {
+      "type": "number",
+      "description": "Ramp velocity score 0-100"
+    },
+    "next_learning_modules": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recommended next learning modules"
+    }
+  }
+}

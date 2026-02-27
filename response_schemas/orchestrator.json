@@ -1,0 +1,48 @@
+{
+  "agent_name": "Onboarding Orchestrator Agent",
+  "agent_id": "69a1939b12618822e8a2dcd9",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "routed_to": {
+      "type": "string",
+      "description": "Which sub-agent handled this query"
+    },
+    "category": {
+      "type": "string",
+      "description": "Query category: day_zero, tool_concierge, role_ramp, check_in_culture, multi_domain"
+    },
+    "message": {
+      "type": "string",
+      "description": "Aggregated response for the employee"
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "category": { "type": "string" },
+          "priority": { "type": "string" },
+          "status": { "type": "string" }
+        },
+        "required": ["task", "category", "priority", "status"]
+      },
+      "description": "Action items from the response"
+    },
+    "current_phase": {
+      "type": "string",
+      "description": "Employee's current onboarding phase"
+    },
+    "completion_percentage": {
+      "type": "number",
+      "description": "Overall onboarding completion percentage"
+    },
+    "next_steps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recommended next steps"
+    }
+  }
+}

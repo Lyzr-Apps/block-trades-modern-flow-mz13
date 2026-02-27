@@ -1,0 +1,53 @@
+{
+  "agent_name": "Tool Concierge Agent",
+  "agent_id": "69a19369fcc35a3ce836847c",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "message": {
+      "type": "string",
+      "description": "Main response message"
+    },
+    "daily_checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "category": { "type": "string", "description": "Documents, Training, Meetings, Tools, Culture" },
+          "completed": { "type": "boolean" },
+          "priority": { "type": "string", "description": "high, medium, low" },
+          "estimated_time": { "type": "string" }
+        },
+        "required": ["task", "category", "completed", "priority", "estimated_time"]
+      },
+      "description": "Today's task checklist"
+    },
+    "policy_answer": {
+      "type": "string",
+      "description": "Answer to policy question if asked"
+    },
+    "relevant_docs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "relevance": { "type": "string" }
+        },
+        "required": ["title", "summary", "relevance"]
+      },
+      "description": "Relevant documentation surfaced"
+    },
+    "tool_guide": {
+      "type": "string",
+      "description": "Tool setup or usage guide if applicable"
+    },
+    "completion_percentage": {
+      "type": "number",
+      "description": "Overall task completion percentage"
+    }
+  }
+}

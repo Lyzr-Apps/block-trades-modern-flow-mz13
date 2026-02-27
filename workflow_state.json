@@ -1,0 +1,56 @@
+{
+  "agents": {
+    "orchestrator": {
+      "id": "69a1939b12618822e8a2dcd9",
+      "name": "Onboarding Orchestrator Agent",
+      "type": "manager"
+    },
+    "day_zero": {
+      "id": "69a19384fcc35a3ce8368482",
+      "name": "Day Zero Readiness Agent",
+      "type": "sub-agent"
+    },
+    "tool_concierge": {
+      "id": "69a19369fcc35a3ce836847c",
+      "name": "Tool Concierge Agent",
+      "type": "sub-agent"
+    },
+    "role_ramp": {
+      "id": "69a19369177bcf99abd099e8",
+      "name": "Role-Based Ramp Agent",
+      "type": "sub-agent"
+    },
+    "checkin_culture": {
+      "id": "69a1936af2417c8ef5b385bd",
+      "name": "Check-In & Culture Agent",
+      "type": "sub-agent"
+    },
+    "checkpoint": {
+      "id": "69a1936af0b6b0621c8ec9a3",
+      "name": "Checkpoint Orchestrator Agent",
+      "type": "independent"
+    },
+    "insights": {
+      "id": "69a1936a78bb4ecc77c12d22",
+      "name": "Onboarding Insights Agent",
+      "type": "independent"
+    },
+    "enablement": {
+      "id": "69a1936afcc35a3ce836847e",
+      "name": "Manager Enablement Agent",
+      "type": "independent"
+    }
+  },
+  "knowledge_bases": {
+    "policies_tools": {
+      "rag_id": "69a192faf572c99c0ffb79fb",
+      "name": "onboardiq_policies_tools",
+      "rag_name": "onboardiqpoliciestoolssi9w"
+    },
+    "role_playbooks": {
+      "rag_id": "69a192fb00c2d274880f00ce",
+      "name": "onboardiq_role_playbooks",
+      "rag_name": "onboardiqroleplaybooksm990"
+    }
+  }
+}

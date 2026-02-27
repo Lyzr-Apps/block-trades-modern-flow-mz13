@@ -1,0 +1,44 @@
+{
+  "agent_name": "Onboarding Orchestrator Agent",
+  "agent_id": "69a1939b12618822e8a2dcd9",
+  "description": "Central brain that manages the onboarding lifecycle, routes employee queries to specialized sub-agents, adapts workflows based on role/region/seniority, aggregates responses, and logs explainable AI decisions",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "routed_to": "string",
+    "category": "string",
+    "message": "string",
+    "action_items": [
+      {
+        "task": "string",
+        "category": "string",
+        "priority": "string",
+        "status": "string"
+      }
+    ],
+    "current_phase": "string",
+    "completion_percentage": "number",
+    "next_steps": [
+      "string"
+    ]
+  },
+  "example_response": {
+    "routed_to": "Which sub-agent handled this query",
+    "category": "Query category: day_zero, tool_concierge, role_ramp, check_in_culture, multi_domain",
+    "message": "Aggregated response for the employee",
+    "action_items": [
+      {
+        "task": "sample string",
+        "category": "sample string",
+        "priority": "sample string",
+        "status": "sample string"
+      }
+    ],
+    "current_phase": "Employee's current onboarding phase",
+    "completion_percentage": 0,
+    "next_steps": [
+      "sample string"
+    ]
+  }
+}

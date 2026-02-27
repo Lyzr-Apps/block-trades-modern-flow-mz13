@@ -1,0 +1,58 @@
+{
+  "agent_name": "Checkpoint Orchestrator Agent",
+  "agent_id": "69a1936af0b6b0621c8ec9a3",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "checkpoint_type": {
+      "type": "string",
+      "description": "30-day, 60-day, or 90-day"
+    },
+    "hire_summary": {
+      "type": "string",
+      "description": "Summary of the hire's onboarding progress"
+    },
+    "evaluation_sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "section_name": { "type": "string" },
+          "rating": { "type": "number", "description": "Rating 1-5" },
+          "description": { "type": "string" },
+          "pre_filled_context": { "type": "string" },
+          "areas_of_strength": { "type": "array", "items": { "type": "string" } },
+          "areas_of_improvement": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["section_name", "rating", "description", "pre_filled_context", "areas_of_strength", "areas_of_improvement"]
+      },
+      "description": "Structured evaluation sections"
+    },
+    "overall_rating": {
+      "type": "number",
+      "description": "Overall rating 1-5"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Action recommendations for the manager"
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "description": "delay, concern, risk" },
+          "description": { "type": "string" }
+        },
+        "required": ["type", "description"]
+      },
+      "description": "Flags for delays, concerns, risks"
+    },
+    "next_checkpoint_date": {
+      "type": "string",
+      "description": "Suggested next checkpoint date"
+    }
+  }
+}
