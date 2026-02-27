@@ -6,12 +6,12 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import {
   Users,
   LayoutDashboard,
   BookOpen,
   Bot,
-  ChevronRight,
   Activity,
   Shield,
   Compass,
@@ -20,6 +20,9 @@ import {
   BarChart3,
   Sparkles,
   CircleDot,
+  ChevronDown,
+  ChevronUp,
+  Database,
 } from 'lucide-react'
 
 import EmployeeConcierge from './sections/EmployeeConcierge'
@@ -73,163 +76,183 @@ const AGENTS = [
 
 type ViewType = 'employee' | 'manager' | 'knowledge'
 
-const NAV_ITEMS: { key: ViewType; label: string; icon: React.ElementType; description: string }[] = [
-  { key: 'employee', label: 'Employee View', icon: Users, description: 'Onboarding concierge' },
-  { key: 'manager', label: 'Manager View', icon: LayoutDashboard, description: 'Command center' },
-  { key: 'knowledge', label: 'Knowledge Base', icon: BookOpen, description: 'Document management' },
-]
-
 export default function Page() {
   const [activeView, setActiveView] = useState<ViewType>('employee')
   const [sampleMode, setSampleMode] = useState(false)
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [showAgentPanel, setShowAgentPanel] = useState(false)
 
+  const isEmployeeView = activeView === 'employee'
+  const isManagerView = activeView === 'manager'
+  const isKnowledgeView = activeView === 'knowledge'
+
+  const handleToggle = () => {
+    if (isKnowledgeView) {
+      setActiveView('employee')
+      return
+    }
+    setActiveView(isEmployeeView ? 'manager' : 'employee')
+  }
+
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background text-foreground flex" style={{ letterSpacing: '0.01em', lineHeight: '1.65' }}>
-        {/* Sidebar */}
-        <aside className="w-64 bg-[hsl(var(--sidebar-background))] border-r border-[hsl(var(--sidebar-border))] flex flex-col flex-shrink-0">
-          {/* Logo */}
-          <div className="p-5 pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="font-serif font-semibold text-lg tracking-wide text-foreground">OnboardIQ</h1>
-                <p className="text-[10px] text-muted-foreground -mt-0.5">Intelligent Onboarding</p>
-              </div>
+      <div className="min-h-screen bg-background text-foreground flex flex-col" style={{ letterSpacing: '0.01em', lineHeight: '1.65' }}>
+        {/* Header */}
+        <header className="h-16 bg-card border-b border-border/20 px-6 flex items-center justify-between flex-shrink-0">
+          {/* Left: Logo + Branding */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <Bot className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-serif font-semibold text-lg tracking-wide text-foreground leading-tight">OnboardIQ</h1>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">Intelligent Onboarding</p>
             </div>
           </div>
 
-          <Separator className="bg-[hsl(var(--sidebar-border))]" />
-
-          {/* Navigation */}
-          <nav className="flex-1 p-3 space-y-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon
-              const isActive = activeView === item.key
-              return (
+          {/* Center: Employee / Manager Toggle */}
+          <div className="flex items-center">
+            {!isKnowledgeView ? (
+              <div className="flex items-center bg-secondary/60 rounded-full p-1 border border-border/20">
                 <button
-                  key={item.key}
-                  onClick={() => setActiveView(item.key)}
+                  onClick={() => setActiveView('employee')}
                   className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors',
-                    isActive
-                      ? 'bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]'
-                      : 'text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]'
+                    'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
+                    isEmployeeView
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  <Icon className="h-4.5 w-4.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className={cn('text-[10px]', isActive ? 'text-[hsl(var(--sidebar-primary-foreground))]/70' : 'text-muted-foreground')}>{item.description}</p>
-                  </div>
-                  {isActive && <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />}
+                  <Users className="h-3.5 w-3.5" />
+                  Employee View
                 </button>
-              )
-            })}
-          </nav>
-
-          <Separator className="bg-[hsl(var(--sidebar-border))]" />
-
-          {/* Agent Status */}
-          <div className="p-3">
-            <button
-              onClick={() => setShowAgentPanel(!showAgentPanel)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
-            >
-              <span className="text-xs font-medium text-[hsl(var(--sidebar-foreground))]">AI Agents</span>
-              <div className="flex items-center gap-1.5">
-                {activeAgentId && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                )}
-                <Badge variant="secondary" className="text-[9px] px-1.5">{AGENTS.length}</Badge>
+                <button
+                  onClick={() => setActiveView('manager')}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
+                    isManagerView
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  Manager View
+                </button>
               </div>
-            </button>
-
-            {showAgentPanel && (
-              <div className="mt-1 space-y-0.5 max-h-52 overflow-y-auto">
-                {AGENTS.map((agent) => {
-                  const Icon = agent.icon
-                  const isActive = activeAgentId === agent.id
-                  return (
-                    <div
-                      key={agent.id}
-                      className={cn(
-                        'flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left transition-colors',
-                        isActive ? 'bg-accent/20' : ''
-                      )}
-                    >
-                      <div className="relative flex-shrink-0">
-                        <Icon className="h-3 w-3 text-muted-foreground" />
-                        {isActive && (
-                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn('text-[10px] font-medium truncate', isActive ? 'text-accent-foreground' : 'text-[hsl(var(--sidebar-foreground))]')}>{agent.name}</p>
-                        <p className="text-[8px] text-muted-foreground truncate">{agent.purpose}</p>
-                      </div>
-                      {isActive && (
-                        <CircleDot className="h-2.5 w-2.5 text-emerald-500 flex-shrink-0" />
-                      )}
-                    </div>
-                  )
-                })}
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveView('employee')}
+                  className="text-xs"
+                >
+                  <Users className="h-3.5 w-3.5 mr-1.5" />
+                  Back to Views
+                </Button>
+                <Badge variant="secondary" className="text-xs px-3 py-1">Knowledge Base</Badge>
               </div>
             )}
           </div>
-        </aside>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Header */}
-          <header className="h-14 bg-card border-b border-border/20 px-6 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <h2 className="font-serif font-semibold text-base tracking-wide">
-                {activeView === 'employee' && 'Employee Concierge'}
-                {activeView === 'manager' && 'Manager Command Center'}
-                {activeView === 'knowledge' && 'Knowledge Base'}
-              </h2>
-              <Badge variant="outline" className="text-[10px] border-border/30">
-                {activeView === 'employee' && 'New Hire'}
-                {activeView === 'manager' && 'HR Manager'}
-                {activeView === 'knowledge' && 'Admin'}
-              </Badge>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Agent Activity Indicator */}
-              {activeAgentId && (
-                <div className="flex items-center gap-2 text-xs text-accent-foreground bg-accent/10 px-3 py-1.5 rounded-full border border-accent/20">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-medium">{AGENTS.find(a => a.id === activeAgentId)?.name ?? 'Agent'} processing...</span>
-                </div>
-              )}
-
-              {/* Sample Data Toggle */}
-              <div className="flex items-center gap-2">
-                <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground cursor-pointer">Sample Data</Label>
-                <Switch id="sample-toggle" checked={sampleMode} onCheckedChange={setSampleMode} />
+          {/* Right: Controls */}
+          <div className="flex items-center gap-3">
+            {/* Agent Activity Indicator */}
+            {activeAgentId && (
+              <div className="flex items-center gap-2 text-xs text-accent-foreground bg-accent/10 px-3 py-1.5 rounded-full border border-accent/20">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-medium">{AGENTS.find(a => a.id === activeAgentId)?.name ?? 'Agent'} processing...</span>
               </div>
-            </div>
-          </header>
+            )}
 
-          {/* Content Area */}
-          <main className="flex-1 p-5 overflow-hidden">
-            {activeView === 'employee' && (
-              <EmployeeConcierge sampleMode={sampleMode} onActiveAgent={setActiveAgentId} />
+            {/* Knowledge Base Button */}
+            {!isKnowledgeView && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveView('knowledge')}
+                className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5"
+              >
+                <Database className="h-3.5 w-3.5 mr-1.5" />
+                KB
+              </Button>
             )}
-            {activeView === 'manager' && (
-              <ManagerCommandCenter sampleMode={sampleMode} onActiveAgent={setActiveAgentId} />
-            )}
-            {activeView === 'knowledge' && (
-              <KnowledgeBasePanel sampleMode={sampleMode} />
-            )}
-          </main>
-        </div>
+
+            <Separator orientation="vertical" className="h-6 bg-border/30" />
+
+            {/* Sample Data Toggle */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground cursor-pointer">Sample Data</Label>
+              <Switch id="sample-toggle" checked={sampleMode} onCheckedChange={setSampleMode} />
+            </div>
+
+            <Separator orientation="vertical" className="h-6 bg-border/30" />
+
+            {/* Agent Status Dropdown */}
+            <button
+              onClick={() => setShowAgentPanel(!showAgentPanel)}
+              className="relative flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/50"
+            >
+              <Bot className="h-3.5 w-3.5" />
+              <span className="font-medium">Agents</span>
+              <Badge variant="secondary" className="text-[9px] px-1.5 h-4">{AGENTS.length}</Badge>
+              {activeAgentId && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              )}
+              {showAgentPanel ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </button>
+          </div>
+        </header>
+
+        {/* Agent Status Dropdown Panel */}
+        {showAgentPanel && (
+          <div className="bg-card border-b border-border/20 px-6 py-3">
+            <div className="flex items-center gap-3 overflow-x-auto">
+              {AGENTS.map((agent) => {
+                const Icon = agent.icon
+                const isActive = activeAgentId === agent.id
+                return (
+                  <div
+                    key={agent.id}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors flex-shrink-0',
+                      isActive
+                        ? 'bg-accent/15 border-accent/30'
+                        : 'bg-background border-border/10'
+                    )}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      {isActive && (
+                        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className={cn('text-[11px] font-medium', isActive ? 'text-accent-foreground' : 'text-foreground')}>{agent.name}</p>
+                      <p className="text-[9px] text-muted-foreground whitespace-nowrap">{agent.purpose}</p>
+                    </div>
+                    {isActive && (
+                      <CircleDot className="h-2.5 w-2.5 text-emerald-500 flex-shrink-0" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Content Area */}
+        <main className="flex-1 p-5 overflow-hidden">
+          {activeView === 'employee' && (
+            <EmployeeConcierge sampleMode={sampleMode} onActiveAgent={setActiveAgentId} />
+          )}
+          {activeView === 'manager' && (
+            <ManagerCommandCenter sampleMode={sampleMode} onActiveAgent={setActiveAgentId} />
+          )}
+          {activeView === 'knowledge' && (
+            <KnowledgeBasePanel sampleMode={sampleMode} />
+          )}
+        </main>
       </div>
     </ErrorBoundary>
   )
