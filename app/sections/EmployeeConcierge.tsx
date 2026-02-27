@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Progress } from '@/components/ui/progress'
 import {
   Send,
   Bot,
@@ -23,6 +24,7 @@ import {
   ChevronRight,
   Sparkles,
 } from 'lucide-react'
+import KnowledgeBasePanel from './KnowledgeBasePanel'
 
 const ORCHESTRATOR_ID = '69a1939b12618822e8a2dcd9'
 
@@ -57,6 +59,7 @@ interface SampleTask {
 interface EmployeeConciergeProps {
   sampleMode: boolean
   onActiveAgent: (id: string | null) => void
+  activeSection: string
 }
 
 const PHASES = ['Pre-Start', 'Week 1', '30 Day', '60 Day', '90 Day']
@@ -171,7 +174,7 @@ function parseAgentResponse(result: AIAgentResponse) {
   } catch { return null }
 }
 
-export default function EmployeeConcierge({ sampleMode, onActiveAgent }: EmployeeConciergeProps) {
+export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSection }: EmployeeConciergeProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -258,6 +261,160 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent }: Employe
   const circumference = 2 * Math.PI * 40
   const strokeDashoffset = circumference - (displayCompletion / 100) * circumference
 
+  // Knowledge Base section
+  if (activeSection === 'knowledge') {
+    return <KnowledgeBasePanel sampleMode={sampleMode} />
+  }
+
+  // Tasks section (full-width task list)
+  if (activeSection === 'tasks') {
+    return (
+      <div className="flex flex-col h-full gap-4">
+        {/* Mini progress at top */}
+        <div className="flex items-center gap-4 p-4 bg-card rounded-lg border border-border/20 shadow-md">
+          <div className="relative flex-shrink-0">
+            <svg width="64" height="64" viewBox="0 0 96 96" className="transform -rotate-90">
+              <circle cx="48" cy="48" r="40" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+              <circle cx="48" cy="48" r="40" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className="transition-all duration-700" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-sm font-semibold font-serif">{displayCompletion}%</span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-serif font-semibold text-sm tracking-wide mb-1">Task Progress</h3>
+            <p className="text-xs text-muted-foreground">{completedTasks} of {totalTasks} tasks completed</p>
+            <Progress value={(completedTasks / Math.max(totalTasks, 1)) * 100} className="h-1.5 mt-2" />
+          </div>
+        </div>
+
+        {/* Task Categories */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {['Documents', 'Tools', 'Meetings', 'Training', 'Culture'].map(cat => {
+              const catTasks = displayTasks.filter(t => t.category === cat)
+              if (catTasks.length === 0) return null
+              const catDone = catTasks.filter(t => t.completed).length
+              return (
+                <Card key={cat} className="shadow-md border-border/20 border-l-4 border-l-primary/40">
+                  <CardHeader className="py-3 px-4">
+                    <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center justify-between">
+                      <span className="flex items-center gap-2">{getCategoryIcon(cat)} {cat}</span>
+                      <Badge variant="secondary" className="text-[10px]">{catDone}/{catTasks.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    <div className="space-y-2">
+                      {catTasks.map(task => (
+                        <div key={task.id} className={`flex items-start gap-2.5 p-2.5 rounded-md border transition-colors ${task.completed ? 'bg-primary/5 border-primary/10' : 'bg-background border-border/10 hover:border-border/30'}`}>
+                          <Checkbox checked={task.completed} onCheckedChange={() => toggleTask(task.id)} className="mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-xs leading-relaxed ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.task}</p>
+                            <Badge variant="outline" className={`text-[9px] px-1 py-0 mt-1 ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Progress & Milestones section (full-width)
+  if (activeSection === 'progress') {
+    return (
+      <div className="flex flex-col h-full gap-4">
+        {/* Large Progress Ring */}
+        <Card className="shadow-md border-border/20">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-8">
+              <div className="relative flex-shrink-0">
+                <svg width="140" height="140" viewBox="0 0 140 140" className="transform -rotate-90">
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="hsl(var(--accent))" strokeWidth="8" strokeLinecap="round" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={(2 * Math.PI * 58) - (displayCompletion / 100) * (2 * Math.PI * 58)} className="transition-all duration-700" />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-semibold font-serif text-foreground">{displayCompletion}%</span>
+                  <span className="text-xs text-muted-foreground">Complete</span>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <h3 className="font-serif font-semibold text-lg tracking-wide text-foreground mb-4">Onboarding Journey</h3>
+                <div className="flex items-center gap-1">
+                  {PHASES.map((phase, i) => (
+                    <React.Fragment key={phase}>
+                      <div className="flex flex-col items-center">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${i < phaseIndex ? 'bg-primary text-primary-foreground' : i === phaseIndex ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
+                          {i < phaseIndex ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
+                        </div>
+                        <span className={`text-[10px] mt-1.5 whitespace-nowrap ${i === phaseIndex ? 'font-semibold text-accent-foreground' : 'text-muted-foreground'}`}>{phase}</span>
+                      </div>
+                      {i < PHASES.length - 1 && (
+                        <div className={`flex-1 h-0.5 mb-5 ${i < phaseIndex ? 'bg-primary' : 'bg-muted'}`} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                    <p className="text-lg font-serif font-semibold">{completedTasks}</p>
+                    <p className="text-[10px] text-muted-foreground">Tasks Done</p>
+                  </div>
+                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                    <p className="text-lg font-serif font-semibold">{totalTasks - completedTasks}</p>
+                    <p className="text-[10px] text-muted-foreground">Remaining</p>
+                  </div>
+                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                    <p className="text-lg font-serif font-semibold">{displayPhase}</p>
+                    <p className="text-[10px] text-muted-foreground">Current Phase</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Milestone Timeline */}
+        <Card className="flex-1 shadow-md border-border/20 overflow-hidden flex flex-col">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-serif font-semibold tracking-wide">Milestone Timeline</CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 flex-1 overflow-y-auto">
+            <div className="space-y-0">
+              {(sampleMode ? SAMPLE_MILESTONES : SAMPLE_MILESTONES.map(m => ({ ...m, completed: false }))).map((milestone, i, arr) => (
+                <div key={i} className="flex items-start gap-4 relative">
+                  {i < arr.length - 1 && (
+                    <div className={`absolute left-[11px] top-6 bottom-0 w-0.5 ${milestone.completed ? 'bg-primary' : 'bg-muted'}`} />
+                  )}
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${milestone.completed ? 'bg-primary text-primary-foreground' : 'bg-muted border-2 border-border'}`}>
+                    {milestone.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
+                  </div>
+                  <div className="flex-1 pb-5">
+                    <p className={`text-sm font-medium ${milestone.completed ? 'text-foreground' : 'text-muted-foreground'}`}>{milestone.label}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Clock className="h-3 w-3" />{milestone.date}
+                    </p>
+                  </div>
+                  {milestone.completed && (
+                    <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-700 border-emerald-500/20">Done</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Default: AI Concierge section (chat + sidebar)
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Progress Header */}
@@ -434,9 +591,9 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent }: Employe
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="space-y-0">
-                {(sampleMode ? SAMPLE_MILESTONES : SAMPLE_MILESTONES.map(m => ({ ...m, completed: false }))).map((milestone, i) => (
+                {(sampleMode ? SAMPLE_MILESTONES : SAMPLE_MILESTONES.map(m => ({ ...m, completed: false }))).map((milestone, i, arr) => (
                   <div key={i} className="flex items-start gap-3 relative">
-                    {i < (sampleMode ? SAMPLE_MILESTONES : []).length - 1 && (
+                    {i < arr.length - 1 && (
                       <div className={`absolute left-[9px] top-5 bottom-0 w-0.5 ${milestone.completed ? 'bg-primary' : 'bg-muted'}`} />
                     )}
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${milestone.completed ? 'bg-primary text-primary-foreground' : 'bg-muted border-2 border-border'}`}>

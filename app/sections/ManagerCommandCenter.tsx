@@ -30,6 +30,7 @@ import {
   RefreshCw,
   Eye,
 } from 'lucide-react'
+import KnowledgeBasePanel from './KnowledgeBasePanel'
 
 const AGENT_IDS = {
   checkpoint: '69a1936af0b6b0621c8ec9a3',
@@ -103,6 +104,7 @@ interface EnablementData {
 interface ManagerCommandCenterProps {
   sampleMode: boolean
   onActiveAgent: (id: string | null) => void
+  activeSection: string
 }
 
 const SAMPLE_METRICS: TeamMetrics = {
@@ -204,7 +206,7 @@ function renderStars(rating: number) {
   return <div className="flex gap-0.5">{stars}</div>
 }
 
-export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: ManagerCommandCenterProps) {
+export default function ManagerCommandCenter({ sampleMode, onActiveAgent, activeSection }: ManagerCommandCenterProps) {
   const [metrics, setMetrics] = useState<TeamMetrics | null>(null)
   const [hires, setHires] = useState<HireDetail[]>([])
   const [alerts, setAlerts] = useState<RiskAlert[]>([])
@@ -212,8 +214,6 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
   const [selectedHire, setSelectedHire] = useState<HireDetail | null>(null)
   const [checkpointData, setCheckpointData] = useState<CheckpointData | null>(null)
   const [enablementData, setEnablementData] = useState<EnablementData | null>(null)
-  const [showCheckpoint, setShowCheckpoint] = useState(false)
-  const [showEnablement, setShowEnablement] = useState(false)
   const [loadingInsights, setLoadingInsights] = useState(false)
   const [loadingCheckpoint, setLoadingCheckpoint] = useState(false)
   const [loadingEnablement, setLoadingEnablement] = useState(false)
@@ -250,25 +250,24 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
     }
   }
 
-  const handleRunCheckpoint = async () => {
-    const hire = displaySelected
-    if (!hire) {
+  const handleRunCheckpoint = async (hire?: HireDetail | null) => {
+    const target = hire ?? displaySelected
+    if (!target) {
       setStatusMessage('Please select a hire first')
       setTimeout(() => setStatusMessage(''), 3000)
       return
     }
     setLoadingCheckpoint(true)
-    setStatusMessage(`Running checkpoint review for ${hire.name}...`)
+    setStatusMessage(`Running checkpoint review for ${target.name}...`)
     onActiveAgent(AGENT_IDS.checkpoint)
     try {
       const result = await callAIAgent(
-        `Run a checkpoint review for ${hire.name}, role: ${hire.role}, started: ${hire.start_date}, current completion: ${hire.completion_percentage}%, ramp velocity: ${hire.ramp_velocity}`,
+        `Run a checkpoint review for ${target.name}, role: ${target.role}, started: ${target.start_date}, current completion: ${target.completion_percentage}%, ramp velocity: ${target.ramp_velocity}`,
         AGENT_IDS.checkpoint
       )
       const data = parseAgentResponse(result)
       if (data) {
         setCheckpointData(data as CheckpointData)
-        setShowCheckpoint(true)
         setStatusMessage('Checkpoint review generated')
       } else {
         setStatusMessage('Unable to generate checkpoint review')
@@ -282,25 +281,24 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
     }
   }
 
-  const handleGetCoaching = async () => {
-    const hire = displaySelected
-    if (!hire) {
+  const handleGetCoaching = async (hire?: HireDetail | null) => {
+    const target = hire ?? displaySelected
+    if (!target) {
       setStatusMessage('Please select a hire first')
       setTimeout(() => setStatusMessage(''), 3000)
       return
     }
     setLoadingEnablement(true)
-    setStatusMessage(`Getting coaching suggestions for ${hire.name}...`)
+    setStatusMessage(`Getting coaching suggestions for ${target.name}...`)
     onActiveAgent(AGENT_IDS.enablement)
     try {
       const result = await callAIAgent(
-        `Provide coaching suggestions for manager regarding ${hire.name}, role: ${hire.role}, completion: ${hire.completion_percentage}%, sentiment: ${hire.sentiment_score}, risk level: ${hire.risk_level}`,
+        `Provide coaching suggestions for manager regarding ${target.name}, role: ${target.role}, completion: ${target.completion_percentage}%, sentiment: ${target.sentiment_score}, risk level: ${target.risk_level}`,
         AGENT_IDS.enablement
       )
       const data = parseAgentResponse(result)
       if (data) {
         setEnablementData(data as EnablementData)
-        setShowEnablement(true)
         setStatusMessage('Coaching suggestions ready')
       } else {
         setStatusMessage('Unable to generate coaching suggestions')
@@ -314,6 +312,538 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
     }
   }
 
+  // Knowledge Base section
+  if (activeSection === 'knowledge') {
+    return <KnowledgeBasePanel sampleMode={sampleMode} />
+  }
+
+  // Checkpoint Review section (dedicated full view)
+  if (activeSection === 'checkpoint') {
+    return (
+      <div className="flex flex-col h-full gap-4">
+        {statusMessage && (
+          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {statusMessage}
+          </div>
+        )}
+
+        <div className="flex gap-4 flex-1 min-h-0">
+          {/* Hire selector */}
+          <div className="w-64 flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden flex-shrink-0">
+            <div className="px-4 py-3 border-b border-border/20">
+              <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Select Hire
+              </h3>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {displayHires.length === 0 && (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    <p className="text-xs">Load team data first</p>
+                    <Button onClick={handleRefreshInsights} disabled={loadingInsights} size="sm" className="mt-2 text-xs">
+                      {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                      Load Team
+                    </Button>
+                  </div>
+                )}
+                {displayHires.map((hire, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedHire(hire)}
+                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
+                        {hire.name?.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{hire.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{hire.role}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Checkpoint content */}
+          <div className="flex-1 overflow-y-auto">
+            {displaySelected ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-serif font-semibold text-primary">
+                      {displaySelected.name?.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-semibold">{displaySelected.name}</h3>
+                      <p className="text-xs text-muted-foreground">{displaySelected.role} - Started {displaySelected.start_date}</p>
+                    </div>
+                  </div>
+                  <Button onClick={() => handleRunCheckpoint()} disabled={loadingCheckpoint} className="bg-primary hover:bg-primary/90">
+                    {loadingCheckpoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Clipboard className="h-4 w-4 mr-2" />}
+                    Run Checkpoint Review
+                  </Button>
+                </div>
+
+                {loadingCheckpoint && (
+                  <Card className="shadow-md border-border/20">
+                    <CardContent className="p-6 space-y-3">
+                      <Skeleton className="h-5 w-1/3 bg-muted" />
+                      <Skeleton className="h-4 w-full bg-muted" />
+                      <Skeleton className="h-4 w-2/3 bg-muted" />
+                      <Skeleton className="h-20 w-full bg-muted" />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {checkpointData && !loadingCheckpoint && (
+                  <Card className="shadow-md border-border/20 border-l-4 border-l-accent">
+                    <CardHeader className="pb-2 pt-4 px-4">
+                      <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
+                        <Clipboard className="h-4 w-4 text-accent" />
+                        Checkpoint Review: {checkpointData.checkpoint_type ?? 'Review'}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-4 space-y-3">
+                      {checkpointData.hire_summary && (
+                        <div className="text-sm leading-relaxed">{renderMarkdown(checkpointData.hire_summary)}</div>
+                      )}
+                      {checkpointData.overall_rating != null && (
+                        <div className="flex items-center gap-3 p-2 bg-background rounded-md">
+                          <span className="text-sm font-medium">Overall Rating:</span>
+                          {renderStars(checkpointData.overall_rating)}
+                          <span className="text-sm font-serif font-semibold">{checkpointData.overall_rating}/5</span>
+                        </div>
+                      )}
+                      {Array.isArray(checkpointData.evaluation_sections) && checkpointData.evaluation_sections.map((section, i) => (
+                        <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-semibold">{section.section_name}</p>
+                            {renderStars(section.rating ?? 0)}
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">{section.description}</p>
+                          {Array.isArray(section.areas_of_strength) && section.areas_of_strength.length > 0 && (
+                            <div className="mb-1">
+                              <p className="text-[10px] font-semibold text-emerald-700">Strengths:</p>
+                              {section.areas_of_strength.map((s, j) => <p key={j} className="text-[10px] text-muted-foreground ml-2">+ {s}</p>)}
+                            </div>
+                          )}
+                          {Array.isArray(section.areas_of_improvement) && section.areas_of_improvement.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-semibold text-amber-700">Areas to Improve:</p>
+                              {section.areas_of_improvement.map((s, j) => <p key={j} className="text-[10px] text-muted-foreground ml-2">- {s}</p>)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {Array.isArray(checkpointData.recommendations) && checkpointData.recommendations.length > 0 && (
+                        <div className="p-2.5 bg-accent/10 rounded-md border border-accent/20">
+                          <p className="text-xs font-semibold text-accent-foreground mb-1">Recommendations</p>
+                          {checkpointData.recommendations.map((rec, i) => (
+                            <p key={i} className="text-xs text-muted-foreground ml-2">- {rec}</p>
+                          ))}
+                        </div>
+                      )}
+                      {Array.isArray(checkpointData.flags) && checkpointData.flags.length > 0 && (
+                        <div className="p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
+                          <p className="text-xs font-semibold text-destructive mb-1">Flags</p>
+                          {checkpointData.flags.map((flag, i) => (
+                            <div key={i} className="flex items-start gap-1.5 ml-2 mb-1">
+                              <Badge variant="outline" className={`text-[9px] px-1 ${getRiskColor(flag.type)}`}>{flag.type}</Badge>
+                              <p className="text-xs text-muted-foreground">{flag.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {checkpointData.next_checkpoint_date && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Next checkpoint: {checkpointData.next_checkpoint_date}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {!checkpointData && !loadingCheckpoint && (
+                  <Card className="shadow-md border-border/20">
+                    <CardContent className="p-12 text-center">
+                      <Clipboard className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                      <h3 className="font-serif font-semibold text-lg mb-2">Run a Checkpoint Review</h3>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto">Click "Run Checkpoint Review" to generate a structured 30/60/90-day evaluation for the selected hire.</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Clipboard className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="font-serif font-semibold text-lg mb-2">Select a Hire</h3>
+                <p className="text-sm text-muted-foreground">Choose a team member from the left to run their checkpoint review.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Coaching section (dedicated full view)
+  if (activeSection === 'coaching') {
+    return (
+      <div className="flex flex-col h-full gap-4">
+        {statusMessage && (
+          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {statusMessage}
+          </div>
+        )}
+
+        <div className="flex gap-4 flex-1 min-h-0">
+          {/* Hire selector */}
+          <div className="w-64 flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden flex-shrink-0">
+            <div className="px-4 py-3 border-b border-border/20">
+              <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Select Hire
+              </h3>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {displayHires.length === 0 && (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    <p className="text-xs">Load team data first</p>
+                    <Button onClick={handleRefreshInsights} disabled={loadingInsights} size="sm" className="mt-2 text-xs">
+                      {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                      Load Team
+                    </Button>
+                  </div>
+                )}
+                {displayHires.map((hire, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedHire(hire)}
+                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
+                        {hire.name?.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{hire.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{hire.role}</p>
+                      </div>
+                      <Badge variant="outline" className={`text-[9px] ${getRiskColor(hire.risk_level)}`}>{hire.risk_level}</Badge>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Coaching content */}
+          <div className="flex-1 overflow-y-auto">
+            {displaySelected ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-serif font-semibold text-primary">
+                      {displaySelected.name?.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-semibold">{displaySelected.name}</h3>
+                      <p className="text-xs text-muted-foreground">{displaySelected.role} - Risk: {displaySelected.risk_level}</p>
+                    </div>
+                  </div>
+                  <Button onClick={() => handleGetCoaching()} disabled={loadingEnablement} variant="outline">
+                    {loadingEnablement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
+                    Get Coaching Suggestions
+                  </Button>
+                </div>
+
+                {loadingEnablement && (
+                  <Card className="shadow-md border-border/20">
+                    <CardContent className="p-6 space-y-3">
+                      <Skeleton className="h-5 w-1/3 bg-muted" />
+                      <Skeleton className="h-4 w-full bg-muted" />
+                      <Skeleton className="h-4 w-2/3 bg-muted" />
+                      <Skeleton className="h-20 w-full bg-muted" />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {enablementData && !loadingEnablement && (
+                  <Card className="shadow-md border-border/20 border-l-4 border-l-primary">
+                    <CardHeader className="pb-2 pt-4 px-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          Coaching Suggestions
+                        </CardTitle>
+                        {enablementData.intervention_urgency && (
+                          <Badge variant="outline" className={`text-[10px] ${enablementData.intervention_urgency === 'immediate' ? getRiskColor('critical') : enablementData.intervention_urgency === 'this_week' ? getRiskColor('warning') : getRiskColor('low')}`}>
+                            {enablementData.intervention_urgency?.replace(/_/g, ' ')}
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-4">
+                      <Tabs defaultValue="coaching" className="w-full">
+                        <TabsList className="w-full h-8 text-xs">
+                          <TabsTrigger value="coaching" className="text-xs flex-1">Coaching</TabsTrigger>
+                          <TabsTrigger value="risks" className="text-xs flex-1">Risk Signals</TabsTrigger>
+                          <TabsTrigger value="tasks" className="text-xs flex-1">Missed Tasks</TabsTrigger>
+                          <TabsTrigger value="skills" className="text-xs flex-1">Skills</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="coaching" className="space-y-2 mt-3">
+                          {enablementData.weekly_summary && (
+                            <div className="p-2.5 bg-background rounded-md text-sm leading-relaxed">{renderMarkdown(enablementData.weekly_summary)}</div>
+                          )}
+                          {Array.isArray(enablementData.coaching_prompts) && enablementData.coaching_prompts.map((prompt, i) => (
+                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-sm font-semibold">{prompt.topic}</p>
+                                <Badge variant="outline" className={`text-[10px] ${getRiskColor(prompt.priority === 'high' ? 'high' : prompt.priority === 'medium' ? 'medium' : 'low')}`}>{prompt.priority}</Badge>
+                              </div>
+                              <p className="text-xs text-foreground leading-relaxed mb-1">{prompt.prompt}</p>
+                              <p className="text-[10px] text-muted-foreground">{prompt.context}</p>
+                            </div>
+                          ))}
+                        </TabsContent>
+
+                        <TabsContent value="risks" className="space-y-2 mt-3">
+                          {Array.isArray(enablementData.risk_signals) && enablementData.risk_signals.map((signal, i) => (
+                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-sm font-semibold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {signal.signal}</p>
+                                <Badge variant="outline" className={`text-[10px] ${getRiskColor(signal.severity)}`}>{signal.severity}</Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-1">{signal.evidence}</p>
+                              <p className="text-xs text-accent-foreground bg-accent/10 px-2 py-1 rounded">{signal.recommended_action}</p>
+                            </div>
+                          ))}
+                          {(!Array.isArray(enablementData.risk_signals) || enablementData.risk_signals.length === 0) && (
+                            <p className="text-sm text-muted-foreground text-center py-4">No risk signals detected</p>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="tasks" className="space-y-2 mt-3">
+                          {Array.isArray(enablementData.missed_tasks) && enablementData.missed_tasks.map((task, i) => (
+                            <div key={i} className="p-3 bg-background rounded-md border border-border/10 flex items-start gap-3">
+                              <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{task.task}</p>
+                                <p className="text-xs text-destructive">{task.days_overdue} days overdue</p>
+                                <p className="text-xs text-muted-foreground mt-1">{task.impact}</p>
+                              </div>
+                            </div>
+                          ))}
+                          {(!Array.isArray(enablementData.missed_tasks) || enablementData.missed_tasks.length === 0) && (
+                            <p className="text-sm text-muted-foreground text-center py-4">No missed tasks</p>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="skills" className="space-y-2 mt-3">
+                          {Array.isArray(enablementData.skill_development) && enablementData.skill_development.map((skill, i) => (
+                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                              <p className="text-sm font-semibold mb-1">{skill.area}</p>
+                              <div className="flex items-center gap-2 text-xs mb-1">
+                                <span className="text-muted-foreground">Current: <span className="font-medium text-foreground">{skill.current_level}</span></span>
+                                <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-muted-foreground">Target: <span className="font-medium text-accent-foreground">{skill.target_level}</span></span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">{skill.suggestion}</p>
+                            </div>
+                          ))}
+                          {(!Array.isArray(enablementData.skill_development) || enablementData.skill_development.length === 0) && (
+                            <p className="text-sm text-muted-foreground text-center py-4">No skill recommendations</p>
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {!enablementData && !loadingEnablement && (
+                  <Card className="shadow-md border-border/20">
+                    <CardContent className="p-12 text-center">
+                      <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                      <h3 className="font-serif font-semibold text-lg mb-2">Get Coaching Suggestions</h3>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto">Click "Get Coaching Suggestions" to receive AI-generated 1:1 prompts, risk signals, and action recommendations.</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="font-serif font-semibold text-lg mb-2">Select a Hire</h3>
+                <p className="text-sm text-muted-foreground">Choose a team member from the left to get coaching suggestions.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Team Overview section (full hire list + detail)
+  if (activeSection === 'team') {
+    return (
+      <div className="flex flex-col h-full gap-4">
+        {statusMessage && (
+          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {statusMessage}
+          </div>
+        )}
+
+        <div className="flex-1 flex gap-4 min-h-0">
+          {/* Team List */}
+          <div className="w-[40%] flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden">
+            <div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
+              <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Team ({displayHires.length})
+              </h3>
+              <Button variant="ghost" size="sm" onClick={handleRefreshInsights} disabled={loadingInsights} className="text-xs h-7 px-2">
+                {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              </Button>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {displayHires.length === 0 && !loadingInsights && (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p>No hire data yet</p>
+                    <p className="text-xs mt-1">Click Refresh to load team insights</p>
+                  </div>
+                )}
+                {loadingInsights && displayHires.length === 0 && (
+                  <div className="space-y-3 p-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="h-4 w-2/3 bg-muted" />
+                        <Skeleton className="h-3 w-1/2 bg-muted" />
+                        <Skeleton className="h-2 w-full bg-muted" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {displayHires.map((hire, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedHire(hire)}
+                    className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                          {hire.name?.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{hire.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{hire.role}</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] ${getRiskColor(hire.risk_level)}`}>
+                        {hire.risk_level}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Progress value={hire.completion_percentage} className="h-1.5 flex-1" />
+                      <span className="text-[10px] text-muted-foreground font-medium">{hire.completion_percentage}%</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><Zap className="h-2.5 w-2.5" /> {hire.ramp_velocity}</span>
+                      <span className="flex items-center gap-1">{getComplianceIcon(hire.compliance_status)} {hire.compliance_status?.replace(/_/g, ' ')}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Detail Panel */}
+          <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
+            {displaySelected ? (
+              <Card className="shadow-md border-border/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-serif font-semibold text-primary">
+                        {displaySelected.name?.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <h3 className="font-serif font-semibold text-lg">{displaySelected.name}</h3>
+                        <p className="text-sm text-muted-foreground">{displaySelected.role}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Started {displaySelected.start_date}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={`${getRiskColor(displaySelected.risk_level)}`}>{displaySelected.risk_level} risk</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <p className="text-lg font-serif font-semibold">{displaySelected.completion_percentage}%</p>
+                      <p className="text-[10px] text-muted-foreground">Completion</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <p className="text-lg font-serif font-semibold">{displaySelected.ramp_velocity}</p>
+                      <p className="text-[10px] text-muted-foreground">Velocity</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <p className="text-lg font-serif font-semibold">{displaySelected.sentiment_score}</p>
+                      <p className="text-[10px] text-muted-foreground">Sentiment</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <p className="text-lg font-serif font-semibold">{displaySelected.tool_adoption}%</p>
+                      <p className="text-[10px] text-muted-foreground">Tool Adoption</p>
+                    </div>
+                  </div>
+
+                  {Array.isArray(displaySelected.risk_reasons) && displaySelected.risk_reasons.length > 0 && (
+                    <div className="mt-3 p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
+                      <p className="text-xs font-semibold text-destructive mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Risk Factors</p>
+                      {displaySelected.risk_reasons.map((reason, i) => (
+                        <p key={i} className="text-xs text-muted-foreground ml-4">- {reason}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 mt-4">
+                    <Button onClick={() => handleRunCheckpoint()} disabled={loadingCheckpoint} className="flex-1 bg-primary hover:bg-primary/90 text-sm">
+                      {loadingCheckpoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Clipboard className="h-4 w-4 mr-2" />}
+                      Run Checkpoint
+                    </Button>
+                    <Button onClick={() => handleGetCoaching()} disabled={loadingEnablement} variant="outline" className="flex-1 text-sm">
+                      {loadingEnablement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
+                      Get Coaching
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex flex-col items-center justify-center flex-1 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Eye className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-serif font-semibold text-lg mb-2">Select a Team Member</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">Choose a hire from the team list to view their details.</p>
+                {!sampleMode && displayHires.length === 0 && (
+                  <Button onClick={handleRefreshInsights} disabled={loadingInsights} className="mt-4 bg-primary hover:bg-primary/90">
+                    {loadingInsights ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                    Load Team Insights
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default: Dashboard section (KPIs + alerts + team list + detail)
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Status Message */}
@@ -401,7 +931,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
         </div>
       )}
 
-      {/* Main Content: Team List + Detail Panel */}
+      {/* Team Overview with Refresh */}
       <div className="flex-1 flex gap-4 min-h-0">
         {/* Team List */}
         <div className="w-[40%] flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden">
@@ -471,7 +1001,6 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
         <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
           {displaySelected ? (
             <>
-              {/* Selected Hire Header */}
               <Card className="shadow-md border-border/20">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
@@ -520,11 +1049,11 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <Button onClick={handleRunCheckpoint} disabled={loadingCheckpoint} className="flex-1 bg-primary hover:bg-primary/90 text-sm">
+                <Button onClick={() => handleRunCheckpoint()} disabled={loadingCheckpoint} className="flex-1 bg-primary hover:bg-primary/90 text-sm">
                   {loadingCheckpoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Clipboard className="h-4 w-4 mr-2" />}
                   Run Checkpoint Review
                 </Button>
-                <Button onClick={handleGetCoaching} disabled={loadingEnablement} variant="outline" className="flex-1 text-sm">
+                <Button onClick={() => handleGetCoaching()} disabled={loadingEnablement} variant="outline" className="flex-1 text-sm">
                   {loadingEnablement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
                   Get Coaching Suggestions
                 </Button>
@@ -533,178 +1062,6 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent }: Mana
                   Refresh
                 </Button>
               </div>
-
-              {/* Checkpoint Review Panel */}
-              {showCheckpoint && checkpointData && (
-                <Card className="shadow-md border-border/20 border-l-4 border-l-accent">
-                  <CardHeader className="pb-2 pt-4 px-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
-                        <Clipboard className="h-4 w-4 text-accent" />
-                        Checkpoint Review: {checkpointData.checkpoint_type ?? 'Review'}
-                      </CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => setShowCheckpoint(false)} className="text-xs h-6">Close</Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-4 pb-4 space-y-3">
-                    {checkpointData.hire_summary && (
-                      <div className="text-sm leading-relaxed">{renderMarkdown(checkpointData.hire_summary)}</div>
-                    )}
-
-                    {checkpointData.overall_rating != null && (
-                      <div className="flex items-center gap-3 p-2 bg-background rounded-md">
-                        <span className="text-sm font-medium">Overall Rating:</span>
-                        {renderStars(checkpointData.overall_rating)}
-                        <span className="text-sm font-serif font-semibold">{checkpointData.overall_rating}/5</span>
-                      </div>
-                    )}
-
-                    {Array.isArray(checkpointData.evaluation_sections) && checkpointData.evaluation_sections.map((section, i) => (
-                      <div key={i} className="p-3 bg-background rounded-md border border-border/10">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-semibold">{section.section_name}</p>
-                          {renderStars(section.rating ?? 0)}
-                        </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{section.description}</p>
-                        {Array.isArray(section.areas_of_strength) && section.areas_of_strength.length > 0 && (
-                          <div className="mb-1">
-                            <p className="text-[10px] font-semibold text-emerald-700">Strengths:</p>
-                            {section.areas_of_strength.map((s, j) => <p key={j} className="text-[10px] text-muted-foreground ml-2">+ {s}</p>)}
-                          </div>
-                        )}
-                        {Array.isArray(section.areas_of_improvement) && section.areas_of_improvement.length > 0 && (
-                          <div>
-                            <p className="text-[10px] font-semibold text-amber-700">Areas to Improve:</p>
-                            {section.areas_of_improvement.map((s, j) => <p key={j} className="text-[10px] text-muted-foreground ml-2">- {s}</p>)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {Array.isArray(checkpointData.recommendations) && checkpointData.recommendations.length > 0 && (
-                      <div className="p-2.5 bg-accent/10 rounded-md border border-accent/20">
-                        <p className="text-xs font-semibold text-accent-foreground mb-1">Recommendations</p>
-                        {checkpointData.recommendations.map((rec, i) => (
-                          <p key={i} className="text-xs text-muted-foreground ml-2">- {rec}</p>
-                        ))}
-                      </div>
-                    )}
-
-                    {Array.isArray(checkpointData.flags) && checkpointData.flags.length > 0 && (
-                      <div className="p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
-                        <p className="text-xs font-semibold text-destructive mb-1">Flags</p>
-                        {checkpointData.flags.map((flag, i) => (
-                          <div key={i} className="flex items-start gap-1.5 ml-2 mb-1">
-                            <Badge variant="outline" className={`text-[9px] px-1 ${getRiskColor(flag.type)}`}>{flag.type}</Badge>
-                            <p className="text-xs text-muted-foreground">{flag.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {checkpointData.next_checkpoint_date && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Next checkpoint: {checkpointData.next_checkpoint_date}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Enablement Panel */}
-              {showEnablement && enablementData && (
-                <Card className="shadow-md border-border/20 border-l-4 border-l-primary">
-                  <CardHeader className="pb-2 pt-4 px-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4 text-primary" />
-                        Coaching Suggestions
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        {enablementData.intervention_urgency && (
-                          <Badge variant="outline" className={`text-[10px] ${enablementData.intervention_urgency === 'immediate' ? getRiskColor('critical') : enablementData.intervention_urgency === 'this_week' ? getRiskColor('warning') : getRiskColor('low')}`}>
-                            {enablementData.intervention_urgency?.replace(/_/g, ' ')}
-                          </Badge>
-                        )}
-                        <Button variant="ghost" size="sm" onClick={() => setShowEnablement(false)} className="text-xs h-6">Close</Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-4 pb-4">
-                    <Tabs defaultValue="coaching" className="w-full">
-                      <TabsList className="w-full h-8 text-xs">
-                        <TabsTrigger value="coaching" className="text-xs flex-1">Coaching</TabsTrigger>
-                        <TabsTrigger value="risks" className="text-xs flex-1">Risk Signals</TabsTrigger>
-                        <TabsTrigger value="tasks" className="text-xs flex-1">Missed Tasks</TabsTrigger>
-                        <TabsTrigger value="skills" className="text-xs flex-1">Skills</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="coaching" className="space-y-2 mt-3">
-                        {enablementData.weekly_summary && (
-                          <div className="p-2.5 bg-background rounded-md text-sm leading-relaxed">{renderMarkdown(enablementData.weekly_summary)}</div>
-                        )}
-                        {Array.isArray(enablementData.coaching_prompts) && enablementData.coaching_prompts.map((prompt, i) => (
-                          <div key={i} className="p-3 bg-background rounded-md border border-border/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="text-sm font-semibold">{prompt.topic}</p>
-                              <Badge variant="outline" className={`text-[10px] ${getRiskColor(prompt.priority === 'high' ? 'high' : prompt.priority === 'medium' ? 'medium' : 'low')}`}>{prompt.priority}</Badge>
-                            </div>
-                            <p className="text-xs text-foreground leading-relaxed mb-1">{prompt.prompt}</p>
-                            <p className="text-[10px] text-muted-foreground">{prompt.context}</p>
-                          </div>
-                        ))}
-                      </TabsContent>
-
-                      <TabsContent value="risks" className="space-y-2 mt-3">
-                        {Array.isArray(enablementData.risk_signals) && enablementData.risk_signals.map((signal, i) => (
-                          <div key={i} className="p-3 bg-background rounded-md border border-border/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="text-sm font-semibold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {signal.signal}</p>
-                              <Badge variant="outline" className={`text-[10px] ${getRiskColor(signal.severity)}`}>{signal.severity}</Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-1">{signal.evidence}</p>
-                            <p className="text-xs text-accent-foreground bg-accent/10 px-2 py-1 rounded">{signal.recommended_action}</p>
-                          </div>
-                        ))}
-                        {(!Array.isArray(enablementData.risk_signals) || enablementData.risk_signals.length === 0) && (
-                          <p className="text-sm text-muted-foreground text-center py-4">No risk signals detected</p>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="tasks" className="space-y-2 mt-3">
-                        {Array.isArray(enablementData.missed_tasks) && enablementData.missed_tasks.map((task, i) => (
-                          <div key={i} className="p-3 bg-background rounded-md border border-border/10 flex items-start gap-3">
-                            <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">{task.task}</p>
-                              <p className="text-xs text-destructive">{task.days_overdue} days overdue</p>
-                              <p className="text-xs text-muted-foreground mt-1">{task.impact}</p>
-                            </div>
-                          </div>
-                        ))}
-                        {(!Array.isArray(enablementData.missed_tasks) || enablementData.missed_tasks.length === 0) && (
-                          <p className="text-sm text-muted-foreground text-center py-4">No missed tasks</p>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="skills" className="space-y-2 mt-3">
-                        {Array.isArray(enablementData.skill_development) && enablementData.skill_development.map((skill, i) => (
-                          <div key={i} className="p-3 bg-background rounded-md border border-border/10">
-                            <p className="text-sm font-semibold mb-1">{skill.area}</p>
-                            <div className="flex items-center gap-2 text-xs mb-1">
-                              <span className="text-muted-foreground">Current: <span className="font-medium text-foreground">{skill.current_level}</span></span>
-                              <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-muted-foreground">Target: <span className="font-medium text-accent-foreground">{skill.target_level}</span></span>
-                            </div>
-                            <p className="text-xs text-muted-foreground">{skill.suggestion}</p>
-                          </div>
-                        ))}
-                        {(!Array.isArray(enablementData.skill_development) || enablementData.skill_development.length === 0) && (
-                          <p className="text-sm text-muted-foreground text-center py-4">No skill recommendations</p>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              )}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
