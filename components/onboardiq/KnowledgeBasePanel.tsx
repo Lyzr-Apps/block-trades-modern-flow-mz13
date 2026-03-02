@@ -161,7 +161,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
     <div className="flex flex-col h-full gap-4">
       {/* Status Message */}
       {statusMessage && (
-        <div className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${statusType === 'success' ? 'glass-sm text-emerald-700' : statusType === 'error' ? 'glass-sm text-destructive' : 'glass-sm text-accent-foreground'}`}>
+        <div className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${statusType === 'success' ? 'glass-sm text-emerald-700' : statusType === 'error' ? 'glass-sm text-destructive' : 'glass-sm text-foreground'}`}>
           {statusType === 'success' ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" /> : statusType === 'error' ? <AlertCircle className="h-4 w-4 flex-shrink-0" /> : <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
           {statusMessage}
         </div>

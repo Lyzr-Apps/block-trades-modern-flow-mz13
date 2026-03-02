@@ -347,7 +347,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -466,7 +466,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                       ))}
                       {Array.isArray(checkpointData.recommendations) && checkpointData.recommendations.length > 0 && (
                         <div className="p-2.5 glass-sm rounded-xl">
-                          <p className="text-xs font-semibold text-accent-foreground mb-1">Recommendations</p>
+                          <p className="text-xs font-semibold text-foreground mb-1">Recommendations</p>
                           {checkpointData.recommendations.map((rec, i) => (
                             <p key={i} className="text-xs text-muted-foreground ml-2">- {rec}</p>
                           ))}
@@ -518,7 +518,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -644,7 +644,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                                 <Badge variant="outline" className={`text-[10px] ${getRiskColor(signal.severity)}`}>{signal.severity}</Badge>
                               </div>
                               <p className="text-xs text-muted-foreground mb-1">{signal.evidence}</p>
-                              <p className="text-xs text-accent-foreground bg-accent/10 px-2 py-1 rounded">{signal.recommended_action}</p>
+                              <p className="text-xs text-foreground bg-accent/10 px-2 py-1 rounded">{signal.recommended_action}</p>
                             </div>
                           ))}
                           {(!Array.isArray(enablementData.risk_signals) || enablementData.risk_signals.length === 0) && (
@@ -675,7 +675,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                               <div className="flex items-center gap-2 text-xs mb-1">
                                 <span className="text-muted-foreground">Current: <span className="font-medium text-foreground">{skill.current_level}</span></span>
                                 <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                                <span className="text-muted-foreground">Target: <span className="font-medium text-accent-foreground">{skill.target_level}</span></span>
+                                <span className="text-muted-foreground">Target: <span className="font-medium text-foreground">{skill.target_level}</span></span>
                               </div>
                               <p className="text-xs text-muted-foreground">{skill.suggestion}</p>
                             </div>
@@ -717,7 +717,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -879,7 +879,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     <div className="flex flex-col h-full gap-4 overflow-y-auto">
       {/* Status Message */}
       {statusMessage && (
-        <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
+        <div className="px-4 py-2 glass-sm rounded-xl text-sm text-foreground flex items-center gap-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {statusMessage}
         </div>
@@ -1100,7 +1100,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                       className="h-full bg-gradient-to-r from-primary/60 to-primary/30 rounded-md flex items-center justify-end pr-2 transition-all"
                       style={{ width: `${s.pct}%` }}
                     >
-                      <span className="text-[9px] font-semibold text-primary-foreground">{s.count}</span>
+                      <span className="text-[9px] font-semibold text-foreground">{s.count}</span>
                     </div>
                   </div>
                 </div>

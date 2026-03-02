@@ -371,7 +371,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                         <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${i < phaseIndex ? 'bg-primary text-primary-foreground' : i === phaseIndex ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
                           {i < phaseIndex ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
                         </div>
-                        <span className={`text-[10px] mt-1.5 whitespace-nowrap ${i === phaseIndex ? 'font-semibold text-accent-foreground' : 'text-muted-foreground'}`}>{phase}</span>
+                        <span className={`text-[10px] mt-1.5 whitespace-nowrap ${i === phaseIndex ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{phase}</span>
                       </div>
                       {i < PHASES.length - 1 && (
                         <div className={`flex-1 h-0.5 mb-5 ${i < phaseIndex ? 'bg-primary' : 'bg-muted'}`} />
@@ -459,7 +459,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${i < phaseIndex ? 'bg-primary text-primary-foreground' : i === phaseIndex ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {i < phaseIndex ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                   </div>
-                  <span className={`text-[10px] mt-1 whitespace-nowrap ${i === phaseIndex ? 'font-semibold text-accent-foreground' : 'text-muted-foreground'}`}>{phase}</span>
+                  <span className={`text-[10px] mt-1 whitespace-nowrap ${i === phaseIndex ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{phase}</span>
                 </div>
                 {i < PHASES.length - 1 && (
                   <div className={`flex-1 h-0.5 mb-4 ${i < phaseIndex ? 'bg-primary' : 'bg-muted'}`} />
@@ -502,7 +502,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
             {displayMessages.map((msg) => (
               <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'glass-sm'}`}>
-                  {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-accent-foreground" />}
+                  {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-primary" />}
                 </div>
                 <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
                   <div className={`rounded-lg px-4 py-3 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'glass-sm'}`}>
@@ -527,7 +527,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                   )}
                   {Array.isArray(msg.nextSteps) && msg.nextSteps.length > 0 && (
                     <div className="mt-2 p-2.5 rounded glass-sm">
-                      <p className="text-[10px] font-semibold text-accent-foreground mb-1">Next Steps:</p>
+                      <p className="text-[10px] font-semibold text-foreground mb-1">Next Steps:</p>
                       {msg.nextSteps.map((step, i) => (
                         <p key={i} className="text-xs text-muted-foreground ml-2">- {step}</p>
                       ))}
@@ -540,7 +540,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
             {isLoading && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-full glass-sm flex items-center justify-center flex-shrink-0">
-                  <Loader2 className="h-4 w-4 animate-spin text-accent-foreground" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
                 <div className="space-y-2 flex-1 max-w-[60%]">
                   <Skeleton className="h-4 w-3/4 bg-muted" />
