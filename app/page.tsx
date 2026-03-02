@@ -28,42 +28,8 @@ import {
   Clipboard,
 } from 'lucide-react'
 
-import EmployeeConcierge from './sections/EmployeeConcierge'
-import ManagerCommandCenter from './sections/ManagerCommandCenter'
-import KnowledgeBasePanel from './sections/KnowledgeBasePanel'
-
-// ErrorBoundary
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error: string }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: '' }
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error: error.message }
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-          <div className="text-center p-8 max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-            <p className="text-muted-foreground mb-4 text-sm">{this.state.error}</p>
-            <button
-              onClick={() => this.setState({ hasError: false, error: '' })}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
+import EmployeeConcierge from '@/components/onboardiq/EmployeeConcierge'
+import ManagerCommandCenter from '@/components/onboardiq/ManagerCommandCenter'
 
 // Agent info for status display
 const AGENTS = [
@@ -122,7 +88,6 @@ export default function Page() {
   }
 
   return (
-    <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground flex" style={{ letterSpacing: '0.01em', lineHeight: '1.65' }}>
         {/* Left Sidebar */}
         <aside className="w-60 bg-[hsl(var(--sidebar-background))] border-r border-[hsl(var(--sidebar-border))] flex flex-col flex-shrink-0">
@@ -319,6 +284,5 @@ export default function Page() {
           </main>
         </div>
       </div>
-    </ErrorBoundary>
   )
 }
