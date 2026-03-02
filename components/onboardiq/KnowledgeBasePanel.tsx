@@ -161,7 +161,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
     <div className="flex flex-col h-full gap-4">
       {/* Status Message */}
       {statusMessage && (
-        <div className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${statusType === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-700' : statusType === 'error' ? 'bg-destructive/10 border border-destructive/20 text-destructive' : 'bg-accent/10 border border-accent/20 text-accent-foreground'}`}>
+        <div className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${statusType === 'success' ? 'glass-sm text-emerald-700' : statusType === 'error' ? 'glass-sm text-destructive' : 'glass-sm text-accent-foreground'}`}>
           {statusType === 'success' ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" /> : statusType === 'error' ? <AlertCircle className="h-4 w-4 flex-shrink-0" /> : <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
           {statusMessage}
         </div>
@@ -179,7 +179,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
           </TabsList>
 
           <TabsContent value="policies" className="flex-1 mt-4">
-            <Card className="shadow-md border-border/20 h-full flex flex-col">
+            <Card className="glass-card h-full flex flex-col">
               <CardHeader className="py-3 px-4 flex-row items-center justify-between">
                 <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
                   <FolderOpen className="h-4 w-4 text-primary" />
@@ -188,7 +188,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="text-[10px]">{displayPolicies.length} documents</Badge>
                   <input ref={policiesInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={(e) => onFileChange(e, POLICIES_TOOLS_RAG_ID, 'policies')} />
-                  <Button size="sm" onClick={() => policiesInputRef.current?.click()} disabled={uploading && uploadTarget === 'policies'} className="text-xs h-7 bg-primary hover:bg-primary/90">
+                  <Button size="sm" onClick={() => policiesInputRef.current?.click()} disabled={uploading && uploadTarget === 'policies'} className="text-xs h-7 bg-primary hover:bg-primary/90 rounded-lg">
                     {uploading && uploadTarget === 'policies' ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
                     Upload
                   </Button>
@@ -217,7 +217,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
                 ) : (
                   <div className="space-y-2">
                     {displayPolicies.map((doc, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-md bg-background border border-border/10 hover:border-border/30 transition-colors">
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-md glass-sm border border-border/10 hover:border-border/30 transition-colors">
                         {getFileIcon(doc.fileType)}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{doc.fileName}</p>
@@ -242,7 +242,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
           </TabsContent>
 
           <TabsContent value="playbooks" className="flex-1 mt-4">
-            <Card className="shadow-md border-border/20 h-full flex flex-col">
+            <Card className="glass-card h-full flex flex-col">
               <CardHeader className="py-3 px-4 flex-row items-center justify-between">
                 <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -251,7 +251,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="text-[10px]">{displayPlaybooks.length} documents</Badge>
                   <input ref={playbooksInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={(e) => onFileChange(e, ROLE_PLAYBOOKS_RAG_ID, 'playbooks')} />
-                  <Button size="sm" onClick={() => playbooksInputRef.current?.click()} disabled={uploading && uploadTarget === 'playbooks'} className="text-xs h-7 bg-primary hover:bg-primary/90">
+                  <Button size="sm" onClick={() => playbooksInputRef.current?.click()} disabled={uploading && uploadTarget === 'playbooks'} className="text-xs h-7 bg-primary hover:bg-primary/90 rounded-lg">
                     {uploading && uploadTarget === 'playbooks' ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
                     Upload
                   </Button>
@@ -280,7 +280,7 @@ export default function KnowledgeBasePanel({ sampleMode }: KnowledgeBasePanelPro
                 ) : (
                   <div className="space-y-2">
                     {displayPlaybooks.map((doc, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-md bg-background border border-border/10 hover:border-border/30 transition-colors">
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-md glass-sm border border-border/10 hover:border-border/30 transition-colors">
                         {getFileIcon(doc.fileType)}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{doc.fileName}</p>

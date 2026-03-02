@@ -25,6 +25,10 @@ import {
   Sparkles,
 } from 'lucide-react'
 import KnowledgeBasePanel from './KnowledgeBasePanel'
+import BuddySystem from './BuddySystem'
+import LearningPath from './LearningPath'
+import FeedbackHub from './FeedbackHub'
+import WelcomeKit from './WelcomeKit'
 
 const ORCHESTRATOR_ID = '69a1939b12618822e8a2dcd9'
 
@@ -261,6 +265,20 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
   const circumference = 2 * Math.PI * 40
   const strokeDashoffset = circumference - (displayCompletion / 100) * circumference
 
+  // New employee sections
+  if (activeSection === 'buddy') {
+    return <BuddySystem sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+  if (activeSection === 'learning') {
+    return <LearningPath sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+  if (activeSection === 'feedback') {
+    return <FeedbackHub sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+  if (activeSection === 'welcome') {
+    return <WelcomeKit sampleMode={sampleMode} />
+  }
+
   // Knowledge Base section
   if (activeSection === 'knowledge') {
     return <KnowledgeBasePanel sampleMode={sampleMode} />
@@ -271,7 +289,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
     return (
       <div className="flex flex-col h-full gap-4">
         {/* Mini progress at top */}
-        <div className="flex items-center gap-4 p-4 bg-card rounded-lg border border-border/20 shadow-md">
+        <div className="flex items-center gap-4 p-4 glass-card">
           <div className="relative flex-shrink-0">
             <svg width="64" height="64" viewBox="0 0 96 96" className="transform -rotate-90">
               <circle cx="48" cy="48" r="40" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
@@ -296,7 +314,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
               if (catTasks.length === 0) return null
               const catDone = catTasks.filter(t => t.completed).length
               return (
-                <Card key={cat} className="shadow-md border-border/20 border-l-4 border-l-primary/40">
+                <Card key={cat} className="glass-card border-l-4 border-l-primary/40">
                   <CardHeader className="py-3 px-4">
                     <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center justify-between">
                       <span className="flex items-center gap-2">{getCategoryIcon(cat)} {cat}</span>
@@ -306,7 +324,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                   <CardContent className="px-4 pb-4">
                     <div className="space-y-2">
                       {catTasks.map(task => (
-                        <div key={task.id} className={`flex items-start gap-2.5 p-2.5 rounded-md border transition-colors ${task.completed ? 'bg-primary/5 border-primary/10' : 'bg-background border-border/10 hover:border-border/30'}`}>
+                        <div key={task.id} className={`flex items-start gap-2.5 p-2.5 rounded-md border transition-colors ${task.completed ? 'bg-primary/5 border-primary/10' : 'glass-sm hover:border-border/30'}`}>
                           <Checkbox checked={task.completed} onCheckedChange={() => toggleTask(task.id)} className="mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <p className={`text-xs leading-relaxed ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.task}</p>
@@ -330,7 +348,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
     return (
       <div className="flex flex-col h-full gap-4">
         {/* Large Progress Ring */}
-        <Card className="shadow-md border-border/20">
+        <Card className="glass-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-8">
               <div className="relative flex-shrink-0">
@@ -363,15 +381,15 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                 </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-3">
-                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                  <div className="text-center p-2 glass-sm rounded-md">
                     <p className="text-lg font-serif font-semibold">{completedTasks}</p>
                     <p className="text-[10px] text-muted-foreground">Tasks Done</p>
                   </div>
-                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                  <div className="text-center p-2 glass-sm rounded-md">
                     <p className="text-lg font-serif font-semibold">{totalTasks - completedTasks}</p>
                     <p className="text-[10px] text-muted-foreground">Remaining</p>
                   </div>
-                  <div className="text-center p-2 bg-background rounded-md border border-border/10">
+                  <div className="text-center p-2 glass-sm rounded-md">
                     <p className="text-lg font-serif font-semibold">{displayPhase}</p>
                     <p className="text-[10px] text-muted-foreground">Current Phase</p>
                   </div>
@@ -382,7 +400,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
         </Card>
 
         {/* Milestone Timeline */}
-        <Card className="flex-1 shadow-md border-border/20 overflow-hidden flex flex-col">
+        <Card className="flex-1 glass-card overflow-hidden flex flex-col">
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-serif font-semibold tracking-wide">Milestone Timeline</CardTitle>
           </CardHeader>
@@ -418,7 +436,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Progress Header */}
-      <div className="flex items-center gap-6 p-4 bg-card rounded-lg border border-border/20 shadow-md">
+      <div className="flex items-center gap-6 p-5 glass-card">
         {/* Circular Progress */}
         <div className="relative flex-shrink-0">
           <svg width="96" height="96" viewBox="0 0 96 96" className="transform -rotate-90">
@@ -455,7 +473,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
       {/* Main Content: Chat + Sidebar */}
       <div className="flex-1 flex gap-4 min-h-0">
         {/* Chat Area */}
-        <div className="flex-[3] flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden">
+        <div className="flex-[3] flex flex-col glass-card overflow-hidden">
           <div className="px-4 py-3 border-b border-border/20 flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
             <h3 className="font-serif font-semibold text-sm tracking-wide">Onboarding Assistant</h3>
@@ -466,7 +484,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {displayMessages.length === 0 && !isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center mb-4">
                   <Sparkles className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="font-serif font-semibold text-lg mb-2">Welcome to OnboardIQ</h3>
@@ -483,11 +501,11 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
 
             {displayMessages.map((msg) => (
               <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-accent/20'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'glass-sm'}`}>
                   {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-accent-foreground" />}
                 </div>
                 <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                  <div className={`rounded-lg px-4 py-3 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary/50'}`}>
+                  <div className={`rounded-lg px-4 py-3 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'glass-sm'}`}>
                     {renderMarkdown(msg.content)}
                   </div>
                   {msg.routedTo && (
@@ -499,7 +517,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                   {Array.isArray(msg.actionItems) && msg.actionItems.length > 0 && (
                     <div className="mt-2 space-y-1.5">
                       {msg.actionItems.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs bg-background/80 rounded px-2.5 py-1.5 border border-border/10">
+                        <div key={i} className="flex items-center gap-2 text-xs glass-sm rounded px-2.5 py-1.5">
                           {getCategoryIcon(item.category)}
                           <span className="flex-1">{item.task}</span>
                           <Badge variant="outline" className={`text-[10px] px-1.5 ${getPriorityColor(item.priority)}`}>{item.priority}</Badge>
@@ -508,7 +526,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                     </div>
                   )}
                   {Array.isArray(msg.nextSteps) && msg.nextSteps.length > 0 && (
-                    <div className="mt-2 p-2.5 rounded bg-accent/10 border border-accent/20">
+                    <div className="mt-2 p-2.5 rounded glass-sm">
                       <p className="text-[10px] font-semibold text-accent-foreground mb-1">Next Steps:</p>
                       {msg.nextSteps.map((step, i) => (
                         <p key={i} className="text-xs text-muted-foreground ml-2">- {step}</p>
@@ -521,7 +539,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
 
             {isLoading && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full glass-sm flex items-center justify-center flex-shrink-0">
                   <Loader2 className="h-4 w-4 animate-spin text-accent-foreground" />
                 </div>
                 <div className="space-y-2 flex-1 max-w-[60%]">
@@ -534,7 +552,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-border/20 bg-background/50">
+          <div className="p-3 border-t border-border/20 glass-sm">
             <div className="flex gap-2">
               <Input
                 placeholder="Ask your onboarding assistant..."
@@ -542,7 +560,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={isLoading}
-                className="flex-1 bg-background border-border/30 text-sm"
+                className="flex-1 glass-input bg-background border-border/30 text-sm"
               />
               <Button onClick={handleSend} disabled={isLoading || !inputValue.trim()} size="icon" className="bg-primary hover:bg-primary/90">
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -554,7 +572,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
         {/* Right Sidebar */}
         <div className="flex-[2] flex flex-col gap-4 min-h-0">
           {/* Daily Tasks */}
-          <Card className="flex-1 shadow-md border-border/20 overflow-hidden flex flex-col">
+          <Card className="flex-1 glass-card overflow-hidden flex flex-col">
             <CardHeader className="py-3 px-4">
               <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center justify-between">
                 <span>Daily Tasks</span>
@@ -564,7 +582,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
             <CardContent className="px-4 pb-4 flex-1 overflow-y-auto">
               <div className="space-y-2">
                 {displayTasks.map((task) => (
-                  <div key={task.id} className={`flex items-start gap-2.5 p-2.5 rounded-md border transition-colors ${task.completed ? 'bg-primary/5 border-primary/10' : 'bg-background border-border/10 hover:border-border/30'}`}>
+                  <div key={task.id} className={`flex items-start gap-2.5 p-2.5 rounded-md border transition-colors ${task.completed ? 'bg-primary/5 border-primary/10' : 'glass-sm hover:border-border/30'}`}>
                     <Checkbox
                       checked={task.completed}
                       onCheckedChange={() => toggleTask(task.id)}
@@ -585,7 +603,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
           </Card>
 
           {/* Milestone Timeline */}
-          <Card className="shadow-md border-border/20">
+          <Card className="glass-card">
             <CardHeader className="py-3 px-4">
               <CardTitle className="text-sm font-serif font-semibold tracking-wide">Milestone Timeline</CardTitle>
             </CardHeader>

@@ -31,6 +31,9 @@ import {
   Eye,
 } from 'lucide-react'
 import KnowledgeBasePanel from './KnowledgeBasePanel'
+import OnboardingPipeline from './OnboardingPipeline'
+import ComplianceTracker from './ComplianceTracker'
+import ActionCenter from './ActionCenter'
 
 const AGENT_IDS = {
   checkpoint: '69a1936af0b6b0621c8ec9a3',
@@ -312,6 +315,16 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     }
   }
 
+  if (activeSection === 'pipeline') {
+    return <OnboardingPipeline sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+  if (activeSection === 'compliance') {
+    return <ComplianceTracker sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+  if (activeSection === 'actions') {
+    return <ActionCenter sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+
   // Knowledge Base section
   if (activeSection === 'knowledge') {
     return <KnowledgeBasePanel sampleMode={sampleMode} />
@@ -322,7 +335,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -330,7 +343,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Hire selector */}
-          <div className="w-64 flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden flex-shrink-0">
+          <div className="w-64 flex flex-col glass-card overflow-hidden flex-shrink-0">
             <div className="px-4 py-3 border-b border-border/20">
               <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" /> Select Hire
@@ -351,7 +364,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   <button
                     key={i}
                     onClick={() => setSelectedHire(hire)}
-                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'glass-active' : 'glass-sm hover:scale-[1.002]'}`}
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
@@ -389,18 +402,18 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 </div>
 
                 {loadingCheckpoint && (
-                  <Card className="shadow-md border-border/20">
+                  <Card className="glass-card">
                     <CardContent className="p-6 space-y-3">
-                      <Skeleton className="h-5 w-1/3 bg-muted" />
-                      <Skeleton className="h-4 w-full bg-muted" />
-                      <Skeleton className="h-4 w-2/3 bg-muted" />
-                      <Skeleton className="h-20 w-full bg-muted" />
+                      <Skeleton className="h-5 w-1/3 glass-sm animate-pulse" />
+                      <Skeleton className="h-4 w-full glass-sm animate-pulse" />
+                      <Skeleton className="h-4 w-2/3 glass-sm animate-pulse" />
+                      <Skeleton className="h-20 w-full glass-sm animate-pulse" />
                     </CardContent>
                   </Card>
                 )}
 
                 {checkpointData && !loadingCheckpoint && (
-                  <Card className="shadow-md border-border/20 border-l-4 border-l-accent">
+                  <Card className="glass-card border-l-4 border-l-accent">
                     <CardHeader className="pb-2 pt-4 px-4">
                       <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
                         <Clipboard className="h-4 w-4 text-accent" />
@@ -412,14 +425,14 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                         <div className="text-sm leading-relaxed">{renderMarkdown(checkpointData.hire_summary)}</div>
                       )}
                       {checkpointData.overall_rating != null && (
-                        <div className="flex items-center gap-3 p-2 bg-background rounded-md">
+                        <div className="flex items-center gap-3 p-2 glass-sm rounded-xl">
                           <span className="text-sm font-medium">Overall Rating:</span>
                           {renderStars(checkpointData.overall_rating)}
                           <span className="text-sm font-serif font-semibold">{checkpointData.overall_rating}/5</span>
                         </div>
                       )}
                       {Array.isArray(checkpointData.evaluation_sections) && checkpointData.evaluation_sections.map((section, i) => (
-                        <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                        <div key={i} className="p-3 glass-sm rounded-xl">
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-sm font-semibold">{section.section_name}</p>
                             {renderStars(section.rating ?? 0)}
@@ -440,7 +453,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                         </div>
                       ))}
                       {Array.isArray(checkpointData.recommendations) && checkpointData.recommendations.length > 0 && (
-                        <div className="p-2.5 bg-accent/10 rounded-md border border-accent/20">
+                        <div className="p-2.5 glass-sm rounded-xl">
                           <p className="text-xs font-semibold text-accent-foreground mb-1">Recommendations</p>
                           {checkpointData.recommendations.map((rec, i) => (
                             <p key={i} className="text-xs text-muted-foreground ml-2">- {rec}</p>
@@ -448,7 +461,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                         </div>
                       )}
                       {Array.isArray(checkpointData.flags) && checkpointData.flags.length > 0 && (
-                        <div className="p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
+                        <div className="p-2.5 glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 rounded-md">
                           <p className="text-xs font-semibold text-destructive mb-1">Flags</p>
                           {checkpointData.flags.map((flag, i) => (
                             <div key={i} className="flex items-start gap-1.5 ml-2 mb-1">
@@ -466,7 +479,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 )}
 
                 {!checkpointData && !loadingCheckpoint && (
-                  <Card className="shadow-md border-border/20">
+                  <Card className="glass-card">
                     <CardContent className="p-12 text-center">
                       <Clipboard className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
                       <h3 className="font-serif font-semibold text-lg mb-2">Run a Checkpoint Review</h3>
@@ -493,7 +506,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -501,7 +514,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Hire selector */}
-          <div className="w-64 flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden flex-shrink-0">
+          <div className="w-64 flex flex-col glass-card overflow-hidden flex-shrink-0">
             <div className="px-4 py-3 border-b border-border/20">
               <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" /> Select Hire
@@ -522,7 +535,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   <button
                     key={i}
                     onClick={() => setSelectedHire(hire)}
-                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                    className={`w-full text-left p-2.5 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'glass-active' : 'glass-sm hover:scale-[1.002]'}`}
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
@@ -561,18 +574,18 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 </div>
 
                 {loadingEnablement && (
-                  <Card className="shadow-md border-border/20">
+                  <Card className="glass-card">
                     <CardContent className="p-6 space-y-3">
-                      <Skeleton className="h-5 w-1/3 bg-muted" />
-                      <Skeleton className="h-4 w-full bg-muted" />
-                      <Skeleton className="h-4 w-2/3 bg-muted" />
-                      <Skeleton className="h-20 w-full bg-muted" />
+                      <Skeleton className="h-5 w-1/3 glass-sm animate-pulse" />
+                      <Skeleton className="h-4 w-full glass-sm animate-pulse" />
+                      <Skeleton className="h-4 w-2/3 glass-sm animate-pulse" />
+                      <Skeleton className="h-20 w-full glass-sm animate-pulse" />
                     </CardContent>
                   </Card>
                 )}
 
                 {enablementData && !loadingEnablement && (
-                  <Card className="shadow-md border-border/20 border-l-4 border-l-primary">
+                  <Card className="glass-card border-l-4 border-l-primary">
                     <CardHeader className="pb-2 pt-4 px-4">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-sm font-serif font-semibold flex items-center gap-2">
@@ -597,10 +610,10 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
                         <TabsContent value="coaching" className="space-y-2 mt-3">
                           {enablementData.weekly_summary && (
-                            <div className="p-2.5 bg-background rounded-md text-sm leading-relaxed">{renderMarkdown(enablementData.weekly_summary)}</div>
+                            <div className="p-2.5 glass-sm rounded-xl text-sm leading-relaxed">{renderMarkdown(enablementData.weekly_summary)}</div>
                           )}
                           {Array.isArray(enablementData.coaching_prompts) && enablementData.coaching_prompts.map((prompt, i) => (
-                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                            <div key={i} className="p-3 glass-sm rounded-xl">
                               <div className="flex items-center justify-between mb-1">
                                 <p className="text-sm font-semibold">{prompt.topic}</p>
                                 <Badge variant="outline" className={`text-[10px] ${getRiskColor(prompt.priority === 'high' ? 'high' : prompt.priority === 'medium' ? 'medium' : 'low')}`}>{prompt.priority}</Badge>
@@ -613,7 +626,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
                         <TabsContent value="risks" className="space-y-2 mt-3">
                           {Array.isArray(enablementData.risk_signals) && enablementData.risk_signals.map((signal, i) => (
-                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                            <div key={i} className="p-3 glass-sm rounded-xl">
                               <div className="flex items-center justify-between mb-1">
                                 <p className="text-sm font-semibold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {signal.signal}</p>
                                 <Badge variant="outline" className={`text-[10px] ${getRiskColor(signal.severity)}`}>{signal.severity}</Badge>
@@ -629,7 +642,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
                         <TabsContent value="tasks" className="space-y-2 mt-3">
                           {Array.isArray(enablementData.missed_tasks) && enablementData.missed_tasks.map((task, i) => (
-                            <div key={i} className="p-3 bg-background rounded-md border border-border/10 flex items-start gap-3">
+                            <div key={i} className="p-3 glass-sm rounded-xl flex items-start gap-3">
                               <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{task.task}</p>
@@ -645,7 +658,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
                         <TabsContent value="skills" className="space-y-2 mt-3">
                           {Array.isArray(enablementData.skill_development) && enablementData.skill_development.map((skill, i) => (
-                            <div key={i} className="p-3 bg-background rounded-md border border-border/10">
+                            <div key={i} className="p-3 glass-sm rounded-xl">
                               <p className="text-sm font-semibold mb-1">{skill.area}</p>
                               <div className="flex items-center gap-2 text-xs mb-1">
                                 <span className="text-muted-foreground">Current: <span className="font-medium text-foreground">{skill.current_level}</span></span>
@@ -665,7 +678,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 )}
 
                 {!enablementData && !loadingEnablement && (
-                  <Card className="shadow-md border-border/20">
+                  <Card className="glass-card">
                     <CardContent className="p-12 text-center">
                       <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
                       <h3 className="font-serif font-semibold text-lg mb-2">Get Coaching Suggestions</h3>
@@ -692,7 +705,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     return (
       <div className="flex flex-col h-full gap-4">
         {statusMessage && (
-          <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+          <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {statusMessage}
           </div>
@@ -700,7 +713,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
         <div className="flex-1 flex gap-4 min-h-0">
           {/* Team List */}
-          <div className="w-[40%] flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden">
+          <div className="w-[40%] flex flex-col glass-card overflow-hidden">
             <div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
               <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" /> Team ({displayHires.length})
@@ -722,9 +735,9 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   <div className="space-y-3 p-2">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="space-y-2">
-                        <Skeleton className="h-4 w-2/3 bg-muted" />
-                        <Skeleton className="h-3 w-1/2 bg-muted" />
-                        <Skeleton className="h-2 w-full bg-muted" />
+                        <Skeleton className="h-4 w-2/3 glass-sm animate-pulse" />
+                        <Skeleton className="h-3 w-1/2 glass-sm animate-pulse" />
+                        <Skeleton className="h-2 w-full glass-sm animate-pulse" />
                       </div>
                     ))}
                   </div>
@@ -733,7 +746,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   <button
                     key={i}
                     onClick={() => setSelectedHire(hire)}
-                    className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                    className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'glass-active' : 'glass-sm hover:scale-[1.002]'}`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
@@ -766,7 +779,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
           {/* Detail Panel */}
           <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
             {displaySelected ? (
-              <Card className="shadow-md border-border/20">
+              <Card className="glass-card">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -783,26 +796,26 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   </div>
 
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.completion_percentage}%</p>
                       <p className="text-[10px] text-muted-foreground">Completion</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.ramp_velocity}</p>
                       <p className="text-[10px] text-muted-foreground">Velocity</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.sentiment_score}</p>
                       <p className="text-[10px] text-muted-foreground">Sentiment</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.tool_adoption}%</p>
                       <p className="text-[10px] text-muted-foreground">Tool Adoption</p>
                     </div>
                   </div>
 
                   {Array.isArray(displaySelected.risk_reasons) && displaySelected.risk_reasons.length > 0 && (
-                    <div className="mt-3 p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
+                    <div className="mt-3 p-2.5 glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 rounded-md">
                       <p className="text-xs font-semibold text-destructive mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Risk Factors</p>
                       {displaySelected.risk_reasons.map((reason, i) => (
                         <p key={i} className="text-xs text-muted-foreground ml-4">- {reason}</p>
@@ -824,7 +837,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
               </Card>
             ) : (
               <div className="flex flex-col items-center justify-center flex-1 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full glass-sm flex items-center justify-center mb-4">
                   <Eye className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="font-serif font-semibold text-lg mb-2">Select a Team Member</h3>
@@ -848,7 +861,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     <div className="flex flex-col h-full gap-4">
       {/* Status Message */}
       {statusMessage && (
-        <div className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm text-accent-foreground flex items-center gap-2">
+        <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {statusMessage}
         </div>
@@ -856,7 +869,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="shadow-md border-border/20">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium">Team Avg Completion</span>
@@ -869,7 +882,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
             <Progress value={displayMetrics?.avg_completion ?? 0} className="h-1.5 mt-2" />
           </CardContent>
         </Card>
-        <Card className="shadow-md border-border/20">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium">Avg Ramp Velocity</span>
@@ -882,7 +895,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
             <Progress value={displayMetrics?.avg_ramp_velocity ?? 0} className="h-1.5 mt-2" />
           </CardContent>
         </Card>
-        <Card className="shadow-md border-border/20">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium">At-Risk Hires</span>
@@ -899,7 +912,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-md border-border/20">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium">Compliance Rate</span>
@@ -916,7 +929,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
 
       {/* Risk Alert Banner */}
       {(displayAlerts?.length ?? 0) > 0 && (
-        <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 flex items-start gap-3">
+        <div className="glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 p-3 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-destructive">{displayAlerts.length} hire{displayAlerts.length > 1 ? 's' : ''} need{displayAlerts.length === 1 ? 's' : ''} attention</p>
@@ -934,7 +947,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
       {/* Team Overview with Refresh */}
       <div className="flex-1 flex gap-4 min-h-0">
         {/* Team List */}
-        <div className="w-[40%] flex flex-col bg-card rounded-lg border border-border/20 shadow-md overflow-hidden">
+        <div className="w-[40%] flex flex-col glass-card overflow-hidden">
           <div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
             <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" /> Team ({displayHires.length})
@@ -956,9 +969,9 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 <div className="space-y-3 p-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="space-y-2">
-                      <Skeleton className="h-4 w-2/3 bg-muted" />
-                      <Skeleton className="h-3 w-1/2 bg-muted" />
-                      <Skeleton className="h-2 w-full bg-muted" />
+                      <Skeleton className="h-4 w-2/3 glass-sm animate-pulse" />
+                      <Skeleton className="h-3 w-1/2 glass-sm animate-pulse" />
+                      <Skeleton className="h-2 w-full glass-sm animate-pulse" />
                     </div>
                   ))}
                 </div>
@@ -967,7 +980,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                 <button
                   key={i}
                   onClick={() => setSelectedHire(hire)}
-                  className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'bg-primary/10 border-primary/30' : 'bg-background border-border/10 hover:border-border/30'}`}
+                  className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'glass-active' : 'glass-sm hover:scale-[1.002]'}`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
@@ -1001,7 +1014,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
         <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
           {displaySelected ? (
             <>
-              <Card className="shadow-md border-border/20">
+              <Card className="glass-card">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -1018,26 +1031,26 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                   </div>
 
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.completion_percentage}%</p>
                       <p className="text-[10px] text-muted-foreground">Completion</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.ramp_velocity}</p>
                       <p className="text-[10px] text-muted-foreground">Velocity</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.sentiment_score}</p>
                       <p className="text-[10px] text-muted-foreground">Sentiment</p>
                     </div>
-                    <div className="text-center p-2 bg-background rounded-md">
+                    <div className="text-center p-2 glass-sm rounded-xl">
                       <p className="text-lg font-serif font-semibold">{displaySelected.tool_adoption}%</p>
                       <p className="text-[10px] text-muted-foreground">Tool Adoption</p>
                     </div>
                   </div>
 
                   {Array.isArray(displaySelected.risk_reasons) && displaySelected.risk_reasons.length > 0 && (
-                    <div className="mt-3 p-2.5 bg-destructive/5 rounded-md border border-destructive/10">
+                    <div className="mt-3 p-2.5 glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 rounded-md">
                       <p className="text-xs font-semibold text-destructive mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Risk Factors</p>
                       {displaySelected.risk_reasons.map((reason, i) => (
                         <p key={i} className="text-xs text-muted-foreground ml-4">- {reason}</p>
@@ -1065,7 +1078,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
             </>
           ) : (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full glass-sm flex items-center justify-center mb-4">
                 <Eye className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="font-serif font-semibold text-lg mb-2">Select a Team Member</h3>
