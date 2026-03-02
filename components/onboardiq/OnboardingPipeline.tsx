@@ -42,9 +42,9 @@ interface OnboardingPipelineProps {
 }
 
 const STAGES = [
-  { key: 'pre_boarding', label: 'Pre-boarding', color: 'from-violet-500/20 to-purple-500/20', border: 'border-violet-500/30' },
-  { key: 'week_1', label: 'Week 1', color: 'from-blue-500/20 to-indigo-500/20', border: 'border-blue-500/30' },
-  { key: 'month_1', label: 'Month 1', color: 'from-cyan-500/20 to-teal-500/20', border: 'border-cyan-500/30' },
+  { key: 'pre_boarding', label: 'Pre-boarding', color: 'from-stone-500/20 to-stone-600/20', border: 'border-stone-500/30' },
+  { key: 'week_1', label: 'Week 1', color: 'from-amber-500/20 to-yellow-600/20', border: 'border-amber-500/30' },
+  { key: 'month_1', label: 'Month 1', color: 'from-orange-500/20 to-amber-600/20', border: 'border-orange-500/30' },
   { key: 'month_2', label: 'Month 2', color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30' },
   { key: 'month_3', label: 'Month 3', color: 'from-emerald-500/20 to-green-500/20', border: 'border-emerald-500/30' },
   { key: 'graduated', label: 'Graduated', color: 'from-pink-500/20 to-rose-500/20', border: 'border-pink-500/30' },

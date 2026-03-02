@@ -71,7 +71,7 @@ function getTypeStyle(type: string) {
   switch (type) {
     case 'urgent': return 'from-red-500/10 to-red-600/5 border-red-500/20'
     case 'followup': return 'from-amber-500/10 to-amber-600/5 border-amber-500/20'
-    case 'scheduled': return 'from-blue-500/10 to-indigo-500/5 border-blue-500/20'
+    case 'scheduled': return 'from-amber-500/10 to-yellow-600/5 border-amber-500/20'
     case 'suggestion': return 'from-emerald-500/10 to-teal-500/5 border-emerald-500/20'
     default: return ''
   }

@@ -49,7 +49,7 @@ const SAMPLE_TRACKS = [
     progress: 65,
     modules: 8,
     completed: 5,
-    color: 'from-blue-500/20 to-indigo-500/20',
+    color: 'from-amber-600/20 to-yellow-700/20',
     icon: Code,
   },
   {
