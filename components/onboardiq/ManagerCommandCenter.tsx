@@ -29,6 +29,18 @@ import {
   MessageSquare,
   RefreshCw,
   Eye,
+  Calendar,
+  BarChart3,
+  Award,
+  UserCheck,
+  Timer,
+  Activity,
+  ArrowUpRight,
+  Smile,
+  Meh,
+  Frown,
+  Briefcase,
+  GraduationCap,
 } from 'lucide-react'
 import KnowledgeBasePanel from './KnowledgeBasePanel'
 import OnboardingPipeline from './OnboardingPipeline'
@@ -822,17 +834,6 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
                       ))}
                     </div>
                   )}
-
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={() => handleRunCheckpoint()} disabled={loadingCheckpoint} className="flex-1 bg-primary hover:bg-primary/90 text-sm">
-                      {loadingCheckpoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Clipboard className="h-4 w-4 mr-2" />}
-                      Run Checkpoint
-                    </Button>
-                    <Button onClick={() => handleGetCoaching()} disabled={loadingEnablement} variant="outline" className="flex-1 text-sm">
-                      {loadingEnablement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
-                      Get Coaching
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -856,9 +857,26 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
     )
   }
 
-  // Default: Dashboard section (KPIs + alerts + team list + detail)
+  // Derived dashboard stats
+  const avgSentiment = displayHires.length > 0 ? (displayHires.reduce((s, h) => s + h.sentiment_score, 0) / displayHires.length).toFixed(1) : '--'
+  const avgToolAdoption = displayHires.length > 0 ? Math.round(displayHires.reduce((s, h) => s + h.tool_adoption, 0) / displayHires.length) : 0
+  const onTrackPct = displayHires.length > 0 ? Math.round(((displayMetrics?.on_track_count ?? 0) / displayHires.length) * 100) : 0
+  const sentimentPositive = displayHires.filter(h => h.sentiment_score >= 7.5).length
+  const sentimentNeutral = displayHires.filter(h => h.sentiment_score >= 5 && h.sentiment_score < 7.5).length
+  const sentimentNegative = displayHires.filter(h => h.sentiment_score < 5).length
+
+  const RECENT_ACTIVITY = [
+    { action: 'Emily Taylor completed 90-day milestone', time: '2 hours ago', type: 'success' as const },
+    { action: 'Maria Lopez missed compliance deadline', time: '4 hours ago', type: 'warning' as const },
+    { action: 'Alex Kumar passed security training', time: '5 hours ago', type: 'success' as const },
+    { action: 'James Park sentiment dropped below 7.0', time: '1 day ago', type: 'warning' as const },
+    { action: 'Sarah Chen completed first sprint demo', time: '1 day ago', type: 'success' as const },
+    { action: 'Ryan Foster pre-boarding tasks assigned', time: '2 days ago', type: 'info' as const },
+  ]
+
+  // Default: Dashboard section
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col h-full gap-4 overflow-y-auto">
       {/* Status Message */}
       {statusMessage && (
         <div className="px-4 py-2 glass-sm rounded-xl text-sm text-accent-foreground flex items-center gap-2">
@@ -867,7 +885,7 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* Row 1: Primary KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="glass-card">
           <CardContent className="p-4">
@@ -927,6 +945,66 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
         </Card>
       </div>
 
+      {/* Row 2: Secondary KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground font-medium">Avg Sentiment</span>
+              <Smile className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-serif font-semibold">{avgSentiment}</span>
+              <span className="text-xs text-muted-foreground">/ 10</span>
+            </div>
+            <div className="flex gap-1 mt-2">
+              {displayHires.map((h, i) => (
+                <div key={i} className={`h-1.5 flex-1 rounded-full ${h.sentiment_score >= 7.5 ? 'bg-emerald-500' : h.sentiment_score >= 5 ? 'bg-amber-500' : 'bg-red-500'}`} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground font-medium">Tool Adoption</span>
+              <Briefcase className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-serif font-semibold">{avgToolAdoption}%</span>
+              <TrendingUp className="h-4 w-4 text-emerald-600" />
+            </div>
+            <Progress value={avgToolAdoption} className="h-1.5 mt-2" />
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground font-medium">On-Track Rate</span>
+              <UserCheck className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-serif font-semibold">{onTrackPct}%</span>
+              <span className="text-xs text-muted-foreground">{displayMetrics?.on_track_count ?? '--'} hires</span>
+            </div>
+            <Progress value={onTrackPct} className="h-1.5 mt-2" />
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground font-medium">Avg Time to Productive</span>
+              <Timer className="h-4 w-4 text-amber-600" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-serif font-semibold">28</span>
+              <span className="text-xs text-muted-foreground">days</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">Target: 30 days</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Risk Alert Banner */}
       {(displayAlerts?.length ?? 0) > 0 && (
         <div className="glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 p-3 flex items-start gap-3">
@@ -941,156 +1019,228 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
               ))}
             </div>
           </div>
+          <Button onClick={handleRefreshInsights} disabled={loadingInsights} variant="ghost" size="sm" className="text-xs h-7 px-2 flex-shrink-0">
+            {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          </Button>
         </div>
       )}
 
-      {/* Team Overview with Refresh */}
-      <div className="flex-1 flex gap-4 min-h-0">
-        {/* Team List */}
-        <div className="w-[40%] flex flex-col glass-card overflow-hidden">
-          <div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
-            <h3 className="font-serif font-semibold text-sm tracking-wide flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" /> Team ({displayHires.length})
-            </h3>
-            <Button variant="ghost" size="sm" onClick={handleRefreshInsights} disabled={loadingInsights} className="text-xs h-7 px-2">
-              {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-            </Button>
-          </div>
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {displayHires.length === 0 && !loadingInsights && (
-                <div className="text-center py-8 text-sm text-muted-foreground">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                  <p>No hire data yet</p>
-                  <p className="text-xs mt-1">Click Refresh to load team insights</p>
+      {/* Row 3: Sentiment + Funnel + Quick Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Sentiment Breakdown */}
+        <Card className="glass-card">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" /> Sentiment Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Smile className="h-4 w-4 text-emerald-600" />
                 </div>
-              )}
-              {loadingInsights && displayHires.length === 0 && (
-                <div className="space-y-3 p-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="space-y-2">
-                      <Skeleton className="h-4 w-2/3 glass-sm animate-pulse" />
-                      <Skeleton className="h-3 w-1/2 glass-sm animate-pulse" />
-                      <Skeleton className="h-2 w-full glass-sm animate-pulse" />
-                    </div>
-                  ))}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Positive (7.5+)</span>
+                    <span className="text-xs font-semibold text-emerald-600">{sentimentPositive}</span>
+                  </div>
+                  <Progress value={displayHires.length > 0 ? (sentimentPositive / displayHires.length) * 100 : 0} className="h-1.5" />
                 </div>
-              )}
-              {displayHires.map((hire, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedHire(hire)}
-                  className={`w-full text-left p-3 rounded-md border transition-all ${displaySelected?.name === hire.name ? 'glass-active' : 'glass-sm hover:scale-[1.002]'}`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                        {hire.name?.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{hire.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{hire.role}</p>
-                      </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <Meh className="h-4 w-4 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Neutral (5-7.5)</span>
+                    <span className="text-xs font-semibold text-amber-600">{sentimentNeutral}</span>
+                  </div>
+                  <Progress value={displayHires.length > 0 ? (sentimentNeutral / displayHires.length) * 100 : 0} className="h-1.5" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                  <Frown className="h-4 w-4 text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Negative (&lt;5)</span>
+                    <span className="text-xs font-semibold text-red-500">{sentimentNegative}</span>
+                  </div>
+                  <Progress value={displayHires.length > 0 ? (sentimentNegative / displayHires.length) * 100 : 0} className="h-1.5" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Onboarding Funnel */}
+        <Card className="glass-card">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" /> Onboarding Funnel
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-2">
+              {[
+                { stage: 'Pre-boarding', count: 1, pct: 100 },
+                { stage: 'Week 1', count: 1, pct: 87 },
+                { stage: 'Month 1', count: 2, pct: 75 },
+                { stage: 'Month 2', count: 1, pct: 50 },
+                { stage: 'Month 3', count: 1, pct: 37 },
+                { stage: 'Graduated', count: 2, pct: 25 },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground w-20 text-right">{s.stage}</span>
+                  <div className="flex-1 h-5 glass-sm rounded-md overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary/60 to-primary/30 rounded-md flex items-center justify-end pr-2 transition-all"
+                      style={{ width: `${s.pct}%` }}
+                    >
+                      <span className="text-[9px] font-semibold text-primary-foreground">{s.count}</span>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] ${getRiskColor(hire.risk_level)}`}>
-                      {hire.risk_level}
-                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={hire.completion_percentage} className="h-1.5 flex-1" />
-                    <span className="text-[10px] text-muted-foreground font-medium">{hire.completion_percentage}%</span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Zap className="h-2.5 w-2.5" /> {hire.ramp_velocity}</span>
-                    <span className="flex items-center gap-1">{getComplianceIcon(hire.compliance_status)} {hire.compliance_status?.replace(/_/g, ' ')}</span>
-                  </div>
-                </button>
+                </div>
               ))}
             </div>
-          </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Quick Stats */}
+        <Card className="glass-card">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
+              <Award className="h-4 w-4 text-primary" /> Quick Stats
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-2.5 glass-sm rounded-lg">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-emerald-600" />
+                  <span className="text-xs font-medium">Graduated This Month</span>
+                </div>
+                <span className="text-sm font-serif font-semibold">1</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 glass-sm rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-amber-600" />
+                  <span className="text-xs font-medium">Upcoming Checkpoints</span>
+                </div>
+                <span className="text-sm font-serif font-semibold">3</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 glass-sm rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium">Active Hires</span>
+                </div>
+                <span className="text-sm font-serif font-semibold">{displayMetrics?.total_hires ?? '--'}</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 glass-sm rounded-lg">
+                <div className="flex items-center gap-2">
+                  <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+                  <span className="text-xs font-medium">Avg Completion Growth</span>
+                </div>
+                <span className="text-sm font-serif font-semibold text-emerald-600">+8%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 4: Team Progress + Recent Activity */}
+      <div className="grid grid-cols-5 gap-4">
+        {/* Team Progress */}
+        <div className="col-span-3">
+          <Card className="glass-card h-full">
+            <CardHeader className="py-3 px-4 flex-row items-center justify-between">
+              <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Team Progress
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={handleRefreshInsights} disabled={loadingInsights} className="text-xs h-7 px-2">
+                {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              </Button>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="grid grid-cols-1 gap-2">
+                {displayHires.map((hire, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2.5 glass-sm rounded-lg hover:scale-[1.002] transition-all">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
+                      {hire.name?.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-medium truncate">{hire.name}</p>
+                          <span className="text-[10px] text-muted-foreground">{hire.role}</span>
+                        </div>
+                        <Badge variant="outline" className={`text-[9px] ${getRiskColor(hire.risk_level)}`}>{hire.risk_level}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <Progress value={hire.completion_percentage} className="h-1.5" />
+                        </div>
+                        <span className="text-[10px] font-medium text-muted-foreground w-8 text-right">{hire.completion_percentage}%</span>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-0.5"><Zap className="h-2.5 w-2.5" />{hire.ramp_velocity}</span>
+                          <span className="flex items-center gap-0.5">
+                            {hire.sentiment_score >= 7.5 ? <Smile className="h-2.5 w-2.5 text-emerald-500" /> : hire.sentiment_score >= 5 ? <Meh className="h-2.5 w-2.5 text-amber-500" /> : <Frown className="h-2.5 w-2.5 text-red-500" />}
+                            {hire.sentiment_score}
+                          </span>
+                          <span className="flex items-center gap-0.5">{getComplianceIcon(hire.compliance_status)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {displayHires.length === 0 && (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p>No hire data loaded</p>
+                    <Button onClick={handleRefreshInsights} disabled={loadingInsights} size="sm" className="mt-2 bg-primary hover:bg-primary/90 text-xs">
+                      {loadingInsights ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                      Load Team Data
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Detail Panel */}
-        <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
-          {displaySelected ? (
-            <>
-              <Card className="glass-card">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-serif font-semibold text-primary">
-                        {displaySelected.name?.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <h3 className="font-serif font-semibold text-lg">{displaySelected.name}</h3>
-                        <p className="text-sm text-muted-foreground">{displaySelected.role}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Started {displaySelected.start_date}</p>
-                      </div>
+        {/* Recent Activity */}
+        <div className="col-span-2">
+          <Card className="glass-card h-full">
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-sm font-serif font-semibold tracking-wide flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" /> Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="space-y-2">
+                {RECENT_ACTIVITY.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5 p-2 glass-sm rounded-lg">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      item.type === 'success' ? 'bg-emerald-500/10' :
+                      item.type === 'warning' ? 'bg-amber-500/10' :
+                      'bg-primary/10'
+                    }`}>
+                      {item.type === 'success' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> :
+                       item.type === 'warning' ? <AlertTriangle className="h-3 w-3 text-amber-600" /> :
+                       <ArrowUpRight className="h-3 w-3 text-primary" />}
                     </div>
-                    <Badge variant="outline" className={`${getRiskColor(displaySelected.risk_level)}`}>{displaySelected.risk_level} risk</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="text-center p-2 glass-sm rounded-xl">
-                      <p className="text-lg font-serif font-semibold">{displaySelected.completion_percentage}%</p>
-                      <p className="text-[10px] text-muted-foreground">Completion</p>
-                    </div>
-                    <div className="text-center p-2 glass-sm rounded-xl">
-                      <p className="text-lg font-serif font-semibold">{displaySelected.ramp_velocity}</p>
-                      <p className="text-[10px] text-muted-foreground">Velocity</p>
-                    </div>
-                    <div className="text-center p-2 glass-sm rounded-xl">
-                      <p className="text-lg font-serif font-semibold">{displaySelected.sentiment_score}</p>
-                      <p className="text-[10px] text-muted-foreground">Sentiment</p>
-                    </div>
-                    <div className="text-center p-2 glass-sm rounded-xl">
-                      <p className="text-lg font-serif font-semibold">{displaySelected.tool_adoption}%</p>
-                      <p className="text-[10px] text-muted-foreground">Tool Adoption</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs leading-relaxed">{item.action}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{item.time}</p>
                     </div>
                   </div>
-
-                  {Array.isArray(displaySelected.risk_reasons) && displaySelected.risk_reasons.length > 0 && (
-                    <div className="mt-3 p-2.5 glass-card border-red-500/20 bg-gradient-to-r from-red-500/5 to-red-600/5 rounded-md">
-                      <p className="text-xs font-semibold text-destructive mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Risk Factors</p>
-                      {displaySelected.risk_reasons.map((reason, i) => (
-                        <p key={i} className="text-xs text-muted-foreground ml-4">- {reason}</p>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button onClick={() => handleRunCheckpoint()} disabled={loadingCheckpoint} className="flex-1 bg-primary hover:bg-primary/90 text-sm">
-                  {loadingCheckpoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Clipboard className="h-4 w-4 mr-2" />}
-                  Run Checkpoint Review
-                </Button>
-                <Button onClick={() => handleGetCoaching()} disabled={loadingEnablement} variant="outline" className="flex-1 text-sm">
-                  {loadingEnablement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
-                  Get Coaching Suggestions
-                </Button>
-                <Button onClick={handleRefreshInsights} disabled={loadingInsights} variant="outline" className="text-sm">
-                  {loadingInsights ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                  Refresh
-                </Button>
+                ))}
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <div className="w-16 h-16 rounded-full glass-sm flex items-center justify-center mb-4">
-                <Eye className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-serif font-semibold text-lg mb-2">Select a Team Member</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">Choose a hire from the team list to view their onboarding details, run checkpoint reviews, and get coaching suggestions.</p>
-              {!sampleMode && displayHires.length === 0 && (
-                <Button onClick={handleRefreshInsights} disabled={loadingInsights} className="mt-4 bg-primary hover:bg-primary/90">
-                  {loadingInsights ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                  Load Team Insights
-                </Button>
-              )}
-            </div>
-          )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
