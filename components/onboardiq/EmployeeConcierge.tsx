@@ -24,7 +24,7 @@ import {
   ChevronRight,
   Sparkles,
 } from 'lucide-react'
-import KnowledgeBasePanel from './KnowledgeBasePanel'
+import EmployeeKnowledgeBase from './EmployeeKnowledgeBase'
 import BuddySystem from './BuddySystem'
 import LearningPath from './LearningPath'
 import FeedbackHub from './FeedbackHub'
@@ -281,7 +281,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
 
   // Knowledge Base section
   if (activeSection === 'knowledge') {
-    return <KnowledgeBasePanel sampleMode={sampleMode} />
+    return <EmployeeKnowledgeBase sampleMode={sampleMode} />
   }
 
   // Tasks section (full-width task list)
