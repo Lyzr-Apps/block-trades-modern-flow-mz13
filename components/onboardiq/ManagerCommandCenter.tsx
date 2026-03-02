@@ -46,6 +46,7 @@ import KnowledgeBasePanel from './KnowledgeBasePanel'
 import OnboardingPipeline from './OnboardingPipeline'
 import ComplianceTracker from './ComplianceTracker'
 import ActionCenter from './ActionCenter'
+import CandidateProgress from './CandidateProgress'
 
 const AGENT_IDS = {
   checkpoint: '69a1936af0b6b0621c8ec9a3',
@@ -384,6 +385,11 @@ export default function ManagerCommandCenter({ sampleMode, onActiveAgent, active
   }
   if (activeSection === 'actions') {
     return <ActionCenter sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
+  }
+
+  // Candidate Progress section
+  if (activeSection === 'progress') {
+    return <CandidateProgress sampleMode={sampleMode} onActiveAgent={onActiveAgent} />
   }
 
   // Knowledge Base section

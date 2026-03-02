@@ -30,6 +30,7 @@ import {
   GraduationCap,
   GitBranch,
   Zap,
+  Eye,
 } from 'lucide-react'
 
 import EmployeeConcierge from '@/components/onboardiq/EmployeeConcierge'
@@ -51,7 +52,7 @@ type ViewType = 'employee' | 'manager'
 
 // Section definitions for each view
 type EmployeeSection = 'concierge' | 'tasks' | 'progress' | 'buddy' | 'learning' | 'feedback' | 'welcome' | 'knowledge'
-type ManagerSection = 'dashboard' | 'team' | 'pipeline' | 'checkpoint' | 'coaching' | 'compliance' | 'actions' | 'knowledge'
+type ManagerSection = 'dashboard' | 'team' | 'pipeline' | 'progress' | 'checkpoint' | 'coaching' | 'compliance' | 'actions' | 'knowledge'
 
 interface SidebarItem {
   key: string
@@ -76,6 +77,7 @@ const MANAGER_SECTIONS: SidebarItem[] = [
   { key: 'dashboard', label: 'Dashboard', description: 'KPIs & risk alerts', icon: LayoutDashboard },
   { key: 'pipeline', label: 'Pipeline', description: 'Kanban board view', icon: GitBranch, badge: 'New' },
   { key: 'team', label: 'Team Overview', description: 'View hire details', icon: Users },
+  { key: 'progress', label: 'Progress View', description: 'Journey & blockers', icon: Eye },
   { key: 'actions', label: 'Action Center', description: 'Priority task queue', icon: Zap, badge: '3' },
   { key: 'checkpoint', label: 'Checkpoints', description: '30/60/90-day reviews', icon: Clipboard },
   { key: 'coaching', label: 'Coaching', description: 'Enablement tools', icon: MessageSquare },
