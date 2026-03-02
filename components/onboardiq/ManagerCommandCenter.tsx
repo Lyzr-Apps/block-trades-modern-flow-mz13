@@ -190,25 +190,74 @@ function getComplianceIcon(status: string) {
 
 function renderMarkdown(text: string) {
   if (!text) return null
+  let cleaned = text.replace(/\n{3,}/g, '\n\n').trim()
+  if (!cleaned) return null
+
+  // If no newlines but has markdown patterns, add structure
+  if (!cleaned.includes('\n')) {
+    cleaned = cleaned.replace(/\s+(\d+)\.\s/g, '\n$1. ')
+    cleaned = cleaned.replace(/\s+([-*])\s(?=[A-Z])/g, '\n$1 ')
+    cleaned = cleaned.replace(/\s+(#{1,3})\s/g, '\n$1 ')
+  }
+
+  const lines = cleaned.split('\n')
+  let start = 0
+  let end = lines.length - 1
+  while (start < lines.length && !lines[start].trim()) start++
+  while (end > start && !lines[end].trim()) end--
+  const trimmedLines = lines.slice(start, end + 1)
+  if (trimmedLines.length === 0) return null
+
   return (
     <div className="space-y-1.5">
-      {text.split('\n').map((line, i) => {
-        if (line.startsWith('### ')) return <h4 key={i} className="font-semibold text-sm mt-2 mb-1">{line.slice(4)}</h4>
-        if (line.startsWith('## ')) return <h3 key={i} className="font-semibold text-base mt-2 mb-1">{line.slice(3)}</h3>
-        if (line.startsWith('# ')) return <h2 key={i} className="font-bold text-lg mt-3 mb-2">{line.slice(2)}</h2>
-        if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 list-disc text-sm leading-relaxed">{formatInlineMgr(line.slice(2))}</li>
-        if (/^\d+\.\s/.test(line)) return <li key={i} className="ml-4 list-decimal text-sm leading-relaxed">{formatInlineMgr(line.replace(/^\d+\.\s/, ''))}</li>
-        if (!line.trim()) return <div key={i} className="h-1" />
-        return <p key={i} className="text-sm leading-relaxed">{formatInlineMgr(line)}</p>
+      {trimmedLines.map((line, i) => {
+        const trimmed = line.trim()
+        if (!trimmed) return <div key={i} className="h-1" />
+        if (trimmed.startsWith('### ')) return <h4 key={i} className="font-semibold text-sm mt-2 mb-1">{formatInlineMgr(trimmed.slice(4))}</h4>
+        if (trimmed.startsWith('## ')) return <h3 key={i} className="font-semibold text-base mt-2 mb-1">{formatInlineMgr(trimmed.slice(3))}</h3>
+        if (trimmed.startsWith('# ')) return <h2 key={i} className="font-bold text-lg mt-3 mb-2">{formatInlineMgr(trimmed.slice(2))}</h2>
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) return <li key={i} className="ml-4 list-disc text-sm leading-relaxed">{formatInlineMgr(trimmed.slice(2))}</li>
+        if (/^\d+\.\s/.test(trimmed)) return <li key={i} className="ml-4 list-decimal text-sm leading-relaxed">{formatInlineMgr(trimmed.replace(/^\d+\.\s/, ''))}</li>
+        if (trimmed.startsWith('> ')) return <blockquote key={i} className="border-l-2 border-primary/30 pl-3 text-sm text-muted-foreground italic leading-relaxed">{formatInlineMgr(trimmed.slice(2))}</blockquote>
+        return <p key={i} className="text-sm leading-relaxed">{formatInlineMgr(trimmed)}</p>
       })}
     </div>
   )
 }
 
-function formatInlineMgr(text: string) {
-  const parts = text.split(/\*\*(.*?)\*\*/g)
-  if (parts.length === 1) return text
-  return parts.map((part, i) => i % 2 === 1 ? <strong key={i} className="font-semibold">{part}</strong> : part)
+function formatInlineMgr(text: string): React.ReactNode {
+  if (!text) return null
+  const tokens: React.ReactNode[] = []
+  let remaining = text
+  let key = 0
+
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/^(.*?)\*\*(.+?)\*\*(.*)$/s)
+    if (boldMatch) {
+      if (boldMatch[1]) tokens.push(<span key={key++}>{boldMatch[1]}</span>)
+      tokens.push(<strong key={key++} className="font-semibold">{boldMatch[2]}</strong>)
+      remaining = boldMatch[3]
+      continue
+    }
+    const italicMatch = remaining.match(/^(.*?)\*([^*]+?)\*(.*)$/s)
+    if (italicMatch) {
+      if (italicMatch[1]) tokens.push(<span key={key++}>{italicMatch[1]}</span>)
+      tokens.push(<em key={key++} className="italic">{italicMatch[2]}</em>)
+      remaining = italicMatch[3]
+      continue
+    }
+    const codeMatch = remaining.match(/^(.*?)`([^`]+?)`(.*)$/s)
+    if (codeMatch) {
+      if (codeMatch[1]) tokens.push(<span key={key++}>{codeMatch[1]}</span>)
+      tokens.push(<code key={key++} className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono">{codeMatch[2]}</code>)
+      remaining = codeMatch[3]
+      continue
+    }
+    tokens.push(<span key={key++}>{remaining}</span>)
+    break
+  }
+
+  return tokens.length === 1 ? tokens[0] : <>{tokens}</>
 }
 
 function renderStars(rating: number) {
