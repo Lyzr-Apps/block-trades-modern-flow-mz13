@@ -123,12 +123,13 @@ export async function callAIAgent(
 
     const { task_id, user_id, session_id } = submitData
 
-    // 2. Poll POST /api/agent with { task_id } — adaptive backoff from CSR
+    // 2. Poll POST /api/agent with { task_id } — fast adaptive backoff from CSR
     const startTime = Date.now()
     let attempt = 0
 
     while (Date.now() - startTime < POLL_TIMEOUT_MS) {
-      const delay = Math.min(300 * Math.pow(1.5, attempt), 3000)
+      // Start polling quickly (100ms), ramp up slowly, cap at 2s
+      const delay = attempt < 3 ? 100 : Math.min(200 * Math.pow(1.3, attempt - 3), 2000)
       await new Promise(r => setTimeout(r, delay))
       attempt++
 

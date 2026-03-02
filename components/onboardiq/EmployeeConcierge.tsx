@@ -138,9 +138,21 @@ function getPriorityColor(priority: string) {
 
 function renderMarkdown(text: string) {
   if (!text) return null
+  // Clean up excessive blank lines — collapse 2+ consecutive empty lines into one
+  const cleaned = text.replace(/\n{3,}/g, '\n\n').trim()
+  if (!cleaned) return null
+  const lines = cleaned.split('\n')
+  // Filter out leading/trailing blank lines
+  let start = 0
+  let end = lines.length - 1
+  while (start < lines.length && !lines[start].trim()) start++
+  while (end > start && !lines[end].trim()) end--
+  const trimmedLines = lines.slice(start, end + 1)
+  if (trimmedLines.length === 0) return null
+
   return (
-    <div className="space-y-1.5">
-      {text.split('\n').map((line, i) => {
+    <div className="space-y-1">
+      {trimmedLines.map((line, i) => {
         if (line.startsWith('### '))
           return <h4 key={i} className="font-semibold text-sm mt-3 mb-1">{line.slice(4)}</h4>
         if (line.startsWith('## '))
@@ -151,7 +163,7 @@ function renderMarkdown(text: string) {
           return <li key={i} className="ml-4 list-disc text-sm leading-relaxed">{formatInline(line.slice(2))}</li>
         if (/^\d+\.\s/.test(line))
           return <li key={i} className="ml-4 list-decimal text-sm leading-relaxed">{formatInline(line.replace(/^\d+\.\s/, ''))}</li>
-        if (!line.trim()) return <div key={i} className="h-1" />
+        if (!line.trim()) return <div key={i} className="h-0.5" />
         return <p key={i} className="text-sm leading-relaxed">{formatInline(line)}</p>
       })}
     </div>
@@ -170,12 +182,56 @@ function parseAgentResponse(result: AIAgentResponse) {
   if (!result?.success) return null
   try {
     const data = result?.response?.result
-    if (!data) return null
+    if (!data) {
+      // Fallback: check if there's a message at response level
+      if (result?.response?.message) {
+        return { message: result.response.message }
+      }
+      return null
+    }
     if (typeof data === 'string') {
       try { return JSON.parse(data) } catch { return { message: data } }
     }
     return data
   } catch { return null }
+}
+
+function extractMessageText(data: Record<string, any> | null, result: AIAgentResponse): string {
+  if (!data && !result) return ''
+  // Try structured response fields first
+  if (data) {
+    if (typeof data.message === 'string' && data.message.trim()) return data.message.trim()
+    if (typeof data.response === 'string' && data.response.trim()) return data.response.trim()
+    if (typeof data.text === 'string' && data.text.trim()) return data.text.trim()
+    if (typeof data.answer === 'string' && data.answer.trim()) return data.answer.trim()
+    if (typeof data.content === 'string' && data.content.trim()) return data.content.trim()
+    if (typeof data.summary === 'string' && data.summary.trim()) return data.summary.trim()
+    if (typeof data.reply === 'string' && data.reply.trim()) return data.reply.trim()
+    if (typeof data.output === 'string' && data.output.trim()) return data.output.trim()
+    // If data has a nested result with message
+    if (data.result && typeof data.result === 'object') {
+      if (typeof data.result.message === 'string' && data.result.message.trim()) return data.result.message.trim()
+      if (typeof data.result.text === 'string' && data.result.text.trim()) return data.result.text.trim()
+    }
+  }
+  // Fallback to response-level message
+  if (result?.response?.message && typeof result.response.message === 'string' && result.response.message.trim()) {
+    return result.response.message.trim()
+  }
+  // Fallback to raw_response
+  if (result?.raw_response && typeof result.raw_response === 'string' && result.raw_response.trim()) {
+    return result.raw_response.trim()
+  }
+  // Last resort: stringify the data if it exists but has no known message field
+  if (data && Object.keys(data).length > 0) {
+    // Check if any string value exists
+    for (const key of Object.keys(data)) {
+      if (typeof data[key] === 'string' && data[key].trim() && !['category', 'routed_to', 'current_phase'].includes(key)) {
+        return data[key].trim()
+      }
+    }
+  }
+  return ''
 }
 
 export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSection }: EmployeeConciergeProps) {
@@ -214,14 +270,14 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
     try {
       const result = await callAIAgent(userMsg.content, ORCHESTRATOR_ID)
       const data = parseAgentResponse(result)
-      const message = data?.message ?? result?.response?.message ?? 'I received your message. Let me help you with that.'
+      const message = extractMessageText(data, result) || 'I received your message. Let me help you with that.'
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: message,
         timestamp: new Date(),
-        routedTo: data?.routed_to,
-        category: data?.category,
+        routedTo: data?.routed_to ?? data?.routed_agent ?? data?.agent_name,
+        category: data?.category ?? data?.query_category,
         actionItems: Array.isArray(data?.action_items) ? data.action_items : undefined,
         nextSteps: Array.isArray(data?.next_steps) ? data.next_steps : undefined,
         completionPercentage: typeof data?.completion_percentage === 'number' ? data.completion_percentage : undefined,
@@ -542,10 +598,16 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                 <div className="w-8 h-8 rounded-full glass-sm flex items-center justify-center flex-shrink-0">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
-                <div className="space-y-2 flex-1 max-w-[60%]">
-                  <Skeleton className="h-4 w-3/4 bg-muted" />
-                  <Skeleton className="h-4 w-1/2 bg-muted" />
-                  <Skeleton className="h-4 w-2/3 bg-muted" />
+                <div className="glass-sm rounded-lg px-4 py-3 max-w-[60%]">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xs font-medium text-foreground">Analyzing your query</span>
+                    <span className="flex gap-0.5">
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Routing to the right specialist agent</p>
                 </div>
               </div>
             )}
