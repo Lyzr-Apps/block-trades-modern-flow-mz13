@@ -487,7 +487,7 @@ export default function EmployeeConcierge({ sampleMode, onActiveAgent, activeSec
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center mb-4">
                   <Sparkles className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-serif font-semibold text-lg mb-2">Welcome to OnboardIQ</h3>
+                <h3 className="font-serif font-semibold text-lg mb-2">Welcome to Lyzr Onboarding Intelligence</h3>
                 <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">Ask me about your onboarding tasks, company policies, tool setup, team introductions, or anything else you need help with.</p>
                 <div className="flex flex-wrap gap-2 mt-4 justify-center">
                   {['What are my tasks for today?', 'How do I set up VPN?', 'Tell me about company culture'].map((q) => (

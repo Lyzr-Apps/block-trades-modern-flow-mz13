@@ -116,8 +116,8 @@ export default function Page() {
               <Bot className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-semibold text-lg tracking-wide text-foreground leading-tight">OnboardIQ</h1>
-              <p className="text-[10px] text-muted-foreground -mt-0.5">Intelligent Onboarding</p>
+              <h1 className="font-semibold text-lg tracking-wide text-foreground leading-tight">Lyzr Onboarding Intelligence</h1>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">AI-Powered Onboarding Platform</p>
             </div>
           </div>
         </div>
